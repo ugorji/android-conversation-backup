@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" 
+  android:id="@+id/result_scrollview"
+  android:fillViewport="true" 
+  android:layout_width="fill_parent" 
+  android:layout_height="wrap_content">
+  <LinearLayout android:id="@+id/result_layout"
+     android:orientation="vertical" 
+     android:layout_width="fill_parent"
+     android:layout_height="fill_parent" 
+     android:scrollbarAlwaysDrawVerticalTrack="true" >
+    <TextView android:id="@+id/result_summary"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="@string/layout_result_backup_summary" />
+    <View android:id="@+id/result_divider"
+          android:background="@drawable/black_white_gradient"
+          android:layout_width="fill_parent"
+          android:layout_height="1dp"
+          android:layout_below="@id/result_summary" />
+    <TextView android:id="@+id/result_text"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="" />
+    <View android:id="@+id/result_divider"
+          android:background="@drawable/black_white_gradient"
+          android:layout_width="fill_parent"
+          android:layout_height="1dp"
+          android:layout_below="@id/result_summary" />
+    <LinearLayout 
+                  android:orientation="horizontal" 
+                  android:layout_width="fill_parent"
+                  android:layout_height="fill_parent" >
+      <Button 
+         android:id="@+id/result_about_app" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/about_app" />
+      <Button 
+         android:id="@+id/result_exit_app" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/exit_app" />
+    </LinearLayout>
+  </LinearLayout>
+</ScrollView>

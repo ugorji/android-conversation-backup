@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" 
+  android:id="@+id/main_scrollview"
+  android:fillViewport="true" 
+  android:layout_width="fill_parent" 
+  android:layout_height="wrap_content">
+  <LinearLayout android:id="@+id/main_layout"
+     android:orientation="vertical" 
+     android:layout_width="fill_parent"
+     android:layout_height="fill_parent" 
+     android:scrollbarAlwaysDrawVerticalTrack="true" >
+    <TextView android:id="@+id/summary"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="@string/summary" />
+    <View android:id="@+id/divider"
+          android:background="@drawable/black_white_gradient"
+          android:layout_width="fill_parent"
+          android:layout_height="1dp"
+          android:layout_below="@id/summary" />
+    <CheckBox android:id="@+id/backup_all_numbers"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="backup_all_numbers"
+              android:text="@string/main_result_for_all_numbers" />
+    <TextView android:id="@+id/specific_numbers_to_backup_label" 
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="@string/main_result_for_specified_numbers" />
+    <EditText android:id="@+id/specific_numbers_to_backup_edit" 
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="" 
+              android:layout_below="@id/specific_numbers_to_backup_label" />
+    <View android:id="@+id/divider"
+          android:background="@drawable/black_white_gradient"
+          android:layout_width="fill_parent"
+          android:layout_height="1dp"
+          android:layout_below="@id/specific_numbers_to_backup_edit" />
+    <TextView android:id="@+id/what_to_backup_label" 
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="@string/main_result_what_to_backup" />
+    <CheckBox android:id="@+id/backup_messages"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="backup_messages"
+              android:text="@string/main_result_backup_messages" />
+    <CheckBox android:id="@+id/backup_mms_attachments"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="backup_mms_attachments"
+              android:text="@string/main_result_backup_mms_attachments" />
+    <CheckBox android:id="@+id/backup_call_records"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="backup_call_records"
+              android:text="@string/main_result_backup_call_records" />
+    <View android:id="@+id/divider"
+          android:background="@drawable/black_white_gradient"
+          android:layout_width="fill_parent"
+          android:layout_height="1dp"
+          android:layout_below="@id/backup_call_records" />
+    <!-- Make all options invisible for now -->
+    <TextView android:id="@+id/options_post_backup_label" 
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="@string/main_result_options_post_backup_label" />
+    <CheckBox android:id="@+id/delete_after_backup"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="delete_after_backup"
+              android:text="@string/main_result_delete_after_backup" />
+    <!--
+    <TextView android:id="@+id/email_backup_label" 
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content" 
+              android:text="Send email to backup below" />
+    -->
+    <CheckBox android:id="@+id/email_backup"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="email_backup"
+              android:text="@string/main_result_email_backup" />
+    <View android:id="@+id/divider"
+          android:background="@drawable/black_white_gradient"
+          android:layout_width="fill_parent"
+          android:layout_height="1dp"
+          android:layout_below="@id/email_backup" />
+    <LinearLayout 
+                  android:orientation="horizontal" 
+                  android:layout_width="fill_parent"
+                  android:layout_height="fill_parent" >
+      <Button 
+         android:id="@+id/confirm" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/run_backup" />
+      <Button 
+         android:id="@+id/about_app" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/about_app" />
+      <Button 
+         android:id="@+id/exit_app" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/exit_app" />
+    </LinearLayout>
+    <CheckBox android:id="@+id/random_question"
+              android:visibility="gone"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:contentDescription="random_question"
+              android:text="@string/main_result_random_question" />
+  </LinearLayout>
+</ScrollView>

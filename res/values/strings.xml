@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  
+  <!-- layout files main.xml -->
+  <string name="layout_result_backup_summary">Backup Summary</string>
+
+  <!-- layout files result.xml -->
+  <string name="main_result_for_all_numbers">Backup for ALL Numbers?</string>
+  <string name="main_result_for_specified_numbers">Numbers to backup</string>
+  <string name="main_result_what_to_backup">What to backup?</string>
+  <string name="main_result_backup_messages">Messages?</string>
+  <string name="main_result_backup_mms_attachments">MMS Attachments?</string>
+  <string name="main_result_backup_call_records">Call Records?</string>
+  <string name="main_result_options_post_backup_label">Post Backup Options</string>
+  <string name="main_result_delete_after_backup">Delete After Backup?</string>
+  <string name="main_result_email_backup">Send backup (via email)?</string>
+  <string name="main_result_random_question">Random Question?</string>
+  
+  <!-- java code -->
+  <string name="app_name">Conversation Backup</string>
+  <string name="home_activity_name">Conversation Backup Home</string>
+  <string name="result_activity_name">Conversation Backup Summary</string>
+  <string name="hello">Hello World, Home!</string>
+  <string name="summary">Conversation Backup will backup SMS, MMS and call records which you want to archive into a human-readable zip file, with viewing tools.</string>
+  <string name="backup_conversation">Backup Conversation</string>
+  <string name="run_backup">Run Backup</string>
+  <string name="about_app">About App</string>
+  <string name="exit_app">Done</string>
+  <string name="attached_message">Attached.</string>
+  <string name="attached_subject">Conversation Backup Archive</string>
+  <string name="start_processing_prompt_message">Start processing conversation backup?</string>
+  <string name="progress_message_default">Processing Conversation backup</string>
+  <string name="email_sent_success">Emailed Conversation Archive SUCCESSFULLY</string>
+  <string name="email_sent_fail">Emailed Conversation Archive FAILED</string>
+  <string name="email_sent">Emailed Conversation Archive</string>
+  <string name="email_chooser_message">Send Conversation Archive ...</string>
+  <string name="progress_backup_call_records">backing up call records</string>
+  <string name="retrieving_messages">retrieving messages</string>
+  <string name="backing_up_mms_attachments">backing up MMS attachments</string>
+  <string name="writing_messages_to_json">writing messages</string>
+  <string name="creating_zip_file">writing zip file</string>
+  <string name="deleting_call_logs">deleting matching call logs</string>
+  <string name="deleting_messages">deleting matching messages</string>
+  <string name="completed_processing">Completed Processing Conversation Backup</string>
+  <string name="prompt_yes">Yes</string>
+  <string name="prompt_no">No</string>
+  <string name="ellipsis">" ... "</string>
+  <string name="done">" DONE "</string>
+  
+  <!-- EULA -->
+  <string name="eula_title">EULA</string>
+  <string name="eula_accept">Accept</string>
+  <string name="eula_refuse">Refuse</string>
+  <!-- RUBBISH -->
+  <string name="x">x</string>
+  <!-- <string name=""></string> -->
+</resources>
