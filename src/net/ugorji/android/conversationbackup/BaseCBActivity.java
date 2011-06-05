@@ -3,6 +3,7 @@ package net.ugorji.android.conversationbackup;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -86,6 +87,8 @@ public abstract class BaseCBActivity extends Activity {
           @Override
           public void onClick(View view) {
             finish();
+            NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+            nm.cancel(Helper.PROCESSING_NOTIFICATION_ID);
             //Intent exi = new Intent(ResultActivity.this, HomeActivity.class);
             //exi.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             //exi.putExtra(Helper.EXIT_ACTION, true);

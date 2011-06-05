@@ -157,10 +157,20 @@ fixes
 
 - fixed potential out of memory error as we held onto each attachment in memory while uploading
 - added contact name in the messages view for easy correlation
-- added search to the UI (so you can filter by name, number, call type / message type, etc)
+- added fast search to the UI (so you can filter by name, number, call type / message type, etc)
 - changed how viewing works, so it works on Google Chrome and all browsers 
 - allow selecting specific contacts through contacts picker
 - improved viewing performance
+- include human-readable timestamp in zip file name
+- show flags: for calls: incoming, outgoing, missed. 
+- show flags: FOR messages: sms, mms, incoming, outgoing.
+- clicking DONE on ResultActivity/HomeActivity should clear all notifications
+
+Add Note that email may not work if your file is too large and rejected 
+- my doFilter2 is very slow
+
+(test that it works for showing all after filtering)
+- works on FF. Filtering hangs on Chrome. very slow. seems hide/show one by one on chrome is slow as heck.
 
 view for sms, mms, incoming, outgoing, etc
 

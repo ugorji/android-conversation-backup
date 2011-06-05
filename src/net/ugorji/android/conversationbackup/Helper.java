@@ -41,9 +41,9 @@ public class Helper {
   
   //TBD fix safety checks
   static final boolean 
-    SAFETY_ALLOW_DELETE_AFTER_BACKUP = false, //change to true before shipping
-    SAFETY_ALLOW_DELETE_TMP_DIR = false, //change to true before shipping
-    SAFETY_DEV_MODE = true, //change to false before shipping
+    SAFETY_ALLOW_DELETE_AFTER_BACKUP = true, //change to true before shipping
+    SAFETY_ALLOW_DELETE_TMP_DIR = true, //change to true before shipping
+    SAFETY_DEV_MODE = false, //change to false before shipping
     SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = false, //change to false for shipping
     SAFETY_XYZ = false; //random unused one
 
@@ -69,6 +69,8 @@ public class Helper {
     SEND_ARCHIVE_REQUEST = 2,
     SELECT_CONTACT_REQUEST = 4;
 
+  static final int PROCESSING_NOTIFICATION_ID = 1;
+  
   static final IntentFilter 
     PROGRESS_INTENT_FILTER = new IntentFilter();
 

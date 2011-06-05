@@ -41,7 +41,6 @@ import android.util.Log;
 public class ProcessingService extends IntentService {
   private static final String TAG = ProcessingService.class.getSimpleName();
   private static final DateFormat DF = new SimpleDateFormat("EEE_yyyy_MM_dd__HH_mm_ss__z");
-  private static final int PROCESSING_NOTIFICATION_ID = 1;
   
   private Intent updateIntent;
   //private Intent notificationIntent;
@@ -165,7 +164,7 @@ public class ProcessingService extends IntentService {
       }
       cur.close();
       Helper.writeJSON("call_logs", jsonarr, tmpdir);
-      updateProgress(getString(R.string.progress_backup_call_records) + getString(R.string.done) + ": call_logs.json", (percentCompl += percentIncr));
+      updateProgress(getString(R.string.progress_backup_call_records) + getString(R.string.done), (percentCompl += percentIncr));
     }
     
     Set<Long> msThreadIds = new HashSet<Long>();
@@ -212,7 +211,6 @@ public class ProcessingService extends IntentService {
           String msgboxCol = (sms.mms ? Helper.Cols.MMS_MESSAGE_BOX : Helper.Cols.SMS_MESSAGE_BOX);
           sms.sender = (cur.getInt(cur.getColumnIndex(msgboxCol)) != Helper.Cols.MESSAGE_BOX_INBOX);
           //sms.name = cur.getString(cur.getColumnIndex(Helper.Cols.NAME)); //null; //TBD
-          sms.name = getDisplayName(sms.number);
           
           Log.d(TAG, String.format("MS Info: Number: %s, Name: %s", sms.number, sms.name));
           if(sms.mms) {
@@ -230,9 +228,12 @@ public class ProcessingService extends IntentService {
             }
             curpart.close();
           }
+          sms.name = getDisplayName(sms.number);
+          
           allms.add(sms);
         } while(cur.moveToNext());
       }
+      
       cur.close();
       cur = null;
 
@@ -434,7 +435,7 @@ public class ProcessingService extends IntentService {
     PendingIntent notificationContentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);   
     Notification notification = new Notification(R.drawable.icon, getString(R.string.app_name), System.currentTimeMillis());
     notification.setLatestEventInfo(getApplicationContext(), getString(R.string.app_name), longMsg, notificationContentIntent);
-    notificationManager.notify(PROCESSING_NOTIFICATION_ID, notification);
+    notificationManager.notify(Helper.PROCESSING_NOTIFICATION_ID, notification);
     //Helper.doSleep(2000);
   }
 
