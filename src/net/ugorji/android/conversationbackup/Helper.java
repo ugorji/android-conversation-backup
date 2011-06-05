@@ -39,9 +39,10 @@ public class Helper {
   
   //TBD fix safety checks
   static final boolean 
-    SAFETY_ALLOW_DELETE_AFTER_BACKUP = true, //change to true before shipping
-    SAFETY_ALLOW_DELETE_TMP_DIR = true, //change to true before shipping
-    SAFETY_DEV_MODE = false, //change to false before shipping
+    SAFETY_ALLOW_DELETE_AFTER_BACKUP = false, //change to true before shipping
+    SAFETY_ALLOW_DELETE_TMP_DIR = false, //change to true before shipping
+    SAFETY_DEV_MODE = true, //change to false before shipping
+    SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = false, //change to false for shipping
     SAFETY_XYZ = false; //random unused one
 
   static final String
@@ -84,6 +85,8 @@ public class Helper {
       ID = "_id", // Telephony.Mms._ID
       THREAD_ID = "thread_id", // Telephony.Mms.THREAD_ID
       ADDRESS = "address", // Telephony.Sms.ADDRESS
+      NAME = "name", // ...
+      DISPLAY_NAME = "display_name", // ContactsContract.ContactNameColumns.DISPLAY_NAME_PRIMARY
       DATE = "date", // Telephony.Mms.DATE
       SUBJECT = "subject", // Telephony.Mms.SUBJECT
       BODY = "body", // Telephony.Sms.BODY
@@ -112,6 +115,7 @@ public class Helper {
       SMS_CONTENT_URI = Uri.parse("content://sms"), // Telephony.Sms.CONTENT_URI
       CONVERSATIONS_CONTENT_URI = Uri.parse("content://mms-sms/conversations"), // Telephony.Sms...
       COMPLETE_CONVERSATIONS_CONTENT_URI = Uri.parse("content://mms-sms/complete-conversations"), // Telephony.Sms...
+      PHONE_LOOKUP_URI = Uri.parse("content://com.android.contacts/phone_lookup"), //ContactsContract.PhoneLookup.CONTENT_FILTER_URI
       XYZ2 = null;
     public static int 
       MESSAGE_BOX_INBOX  = 1, //if not in inbox, then the message was not sent by us
@@ -150,6 +154,7 @@ public class Helper {
     public long timestamp;
     public long id;
     public String number;
+    public String name;
     public int compareTo(Ho s2) {
       if(timestamp < s2.timestamp) return -1;
       else if(timestamp > s2.timestamp) return 1;
@@ -163,6 +168,7 @@ public class Helper {
       jobj.put("datetime", SDF.format(new Date(timestamp)));
       jobj.put("number", number);
       jobj.put("id", id);
+      jobj.put("name", name);
       return jobj;
     }
   }
@@ -171,13 +177,11 @@ public class Helper {
   public static class Cl extends Ho {
     public int duration;
     public String type;
-    public String name;
     public JSONObject toJSON() throws Exception {
       //new JSONObject(this, FIELDS)
       JSONObject jobj = super.toJSON();
       jobj.put("duration", duration);
       jobj.put("type", type);
-      jobj.put("name", name);
       return jobj;
     }
   }
@@ -210,7 +214,8 @@ public class Helper {
   public static class MmsEntry {
     //public static final String[] FIELDS = new String[] {"text", "filename"};
     public String text;
-    public byte[] content;
+    //do not store the byte[] content here, as we hold onto memory during processing
+    //public byte[] content;
     public String filename;
     public JSONObject toJSON() throws Exception {
       //new JSONObject(this, FIELDS)
@@ -270,7 +275,7 @@ public class Helper {
   }
   
   
-  public static String write(Collection c, Object separator, Object prefix, Object postfix) {
+  public static String write(Collection<?> c, Object separator, Object prefix, Object postfix) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
     for(Object o: c) {

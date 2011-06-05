@@ -136,3 +136,42 @@ UPDATE CHECKLIST
 - Update SAFETY_XXX variables in Helper
 - in AndroidManifest.xml, increment versionCode (+1) and versionName (appropriately)
 - update versionName to be same as value in Helper.VERSION
+
+NEW FEATURES
+============
+- show name on messages
+- allow filtering by name (ie use json to find where name matches a regex)
+
+To get the name for SMS
+- get recipient id, and use that to look into thread id to get person id, 
+- and use that in contacts provider to get
+
+take the phone number, and return the display name.
+
+- get all the numbers (for call logs and sms)
+- do a query to return a mapping of number to array containing canonical number, display name, etc
+- put these into the in-memory entities
+- so we need access to contacts database
+
+fixes
+
+- fixed potential out of memory error as we held onto each attachment in memory while uploading
+- added contact name to the json for easy correlation
+- added search to the UI (so you can filter by name
+
+
+
+
+
+acb_messages.js
+acb_call_logs.js
+acb_summary.js
+acb_script.js
+acb_style.css
+index.html
+[ ... attachments ... ]
+
+dir/zip name: acb_2011_01_20__23_10_12__UTC[.zip]
+
+use script src to load everything.
+

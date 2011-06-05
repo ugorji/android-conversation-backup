@@ -49,6 +49,7 @@
      .ugorji_call_outgoing, .ugorji_message_sender {
        background: #ccccff;
      }
+     .ugorji_loaded { }
      .ugorji_space {
      padding: 3px 4px 3px 4px;
      float: left;
@@ -72,9 +73,13 @@
   -->
   </style>
   <script>
+    var filterCallsTimer = 0;
+    var filterMessagesTimer = 0;
+    
     function sayhi() {
       alert("Hi");
     }
+    
     function populateColorKey() {
       var items = [];
       items.push("<table>");
@@ -87,7 +92,9 @@
       items.push("</table>");
       $("#ugorji_color_key").html(items.join(''));
     }
+    
     function populateSummary(data) {
+      if($("#ugorji_summary").hasClass("ugorji_loaded")) return;
       $("#ugorji_summary_title").html("<h2>Run on " + data.datetime + "</h2>");
       var items = [];
       items.push("<table>");
@@ -97,39 +104,54 @@
       });
       items.push("</table>");
       $("#ugorji_summary").html(items.join(''));
+      $("#ugorji_summary").addClass("ugorji_loaded");
     }
+    
     function populateCallLogs(data) {
+      if($("#ugorji_call_logs").hasClass("ugorji_loaded")) return;
       var items = [];
       items.push("<table>");
-      items.push("<tr><th>ID</th><th>Number</th><th>Date</th><th>Duration</th>" + 
-                 "<th>Type</th><th>Name</th></tr>");
+      items.push("<tr><th>ID</th><th>Name</th><th>Number</th><th>Date</th><th>Duration</th>" + 
+                 "<th>Type</th></tr>");
       $.each(data.call_logs, function(index, value) { 
-        items.push("<tr class='");
+        items.push("<tr id='ugorji_call_'" + value.id + "' class='");
         if(value.type == 'missed') items.push(" ugorji_call_missed");
         else if(value.type == 'incoming') items.push(" ugorji_call_incoming");
         else if(value.type == 'outgoing') items.push(" ugorji_call_outgoing");
         items.push("'>");
-        items.push("<td>" + value.id + "</td><td>" + value.number + "</td><td>" + 
-                   value.datetime + "</td><td>" + value.duration + "</td><td>" + 
-                   value.type + "</td><td>" + value.name + "</td></tr>"); 
+        items.push("<td>" + value.id + 
+          "</td><td id='ugorji_call_name_'" + value.id + "'>" + value.name + 
+          "</td><td id='ugorji_call_number_'" + value.id + "'>" + value.number + 
+          "</td><td>" + value.datetime + 
+          "</td><td>" + value.duration + 
+          "</td><td>" + value.type + 
+          "</td></tr>"); 
       });
       items.push("</table>");
       $("#ugorji_call_logs").html(items.join(''));
+      $("#ugorji_call_logs").addClass("ugorji_loaded");
     }
+    
     function populateMessages(data) {
+      if($("#ugorji_messages").hasClass("ugorji_loaded")) return;
+      //console.log("populateMessages");
       var items = [];
       items.push("<table>");
-      items.push("<tr><th>ID</th><th>Number</th><th>Date</th>" + 
+      items.push("<tr><th>ID</th><th>Name</th><th>Number</th><th>Date</th>" + 
                  "<th>Subject</th><th>Text</th><th>Entries</th></tr>");
       $.each(data.messages, function(index, value) { 
-        items.push("<tr class='");
+        items.push("<tr id='ugorji_msg_'" + value.id + "' class='");
         if(value.sender && value.mms) items.push(" ugorji_message_mms_sender");
         else if(value.sender) items.push(" ugorji_message_sender");
         else if(value.mms) items.push(" ugorji_message_mms");
         items.push("'>");
-        items.push("<td>" + value.id + "</td><td>" + value.number + "</td><td>" + 
-                   value.datetime + "</td><td>" + s(value.subject) + "</td><td>" + s(value.text) + 
-                   "</td><td>"); 
+        items.push("<td>" + value.id + 
+          "</td><td id='ugorji_msg_name_'" + value.id + "'>" + value.name + 
+          "</td><td id='ugorji_msg_number_'" + value.id + "'>" + value.number + 
+          "</td><td>" + value.datetime + 
+          "</td><td>" + s(value.subject) + 
+          "</td><td>" + s(value.text) + 
+          "</td><td>"); 
         if(value.entries && value.entries.length > 0) {
           $.each(value.entries, function(ix, vx) { 
             if(vx.filename) items.push(" <a href='mms." + value.id + "." + vx.filename + "'>" + (ix+1) + "</a> ");
@@ -139,22 +161,56 @@
       });
       items.push("</table>");
       $("#ugorji_messages").html(items.join(''));
+      $("#ugorji_messages").addClass("ugorji_loaded");
     }
+
+    function filterMessages() {
+      clearTimeout(filterMessagesTimer);
+      filterMessagesTimer = setTimeout(doFilterMessages, 1000);
+    }
+
+    function doFilterMessages() {
+      var xRegex = $("#ugorji_messages_filter").val();
+      console.log("doFilterMessages: " + xRegex);
+      $("#ugorji_messages tr").show();
+      if($.trim(xRegex).length > 0) {
+        //$("p").not($("p").contains("1"));
+        $("#ugorji_messages tr").not($("#ugorji_messages tr:contains('" + xRegex + "')")).hide();
+      } 
+    }
+    
+    function filterCalls() {
+      clearTimeout(filterCallsTimer);
+      filterCallsTimer = setTimeout(doFilterCalls, 1000);
+    }
+
+    function doFilterCalls() {
+      var xRegex = $("#ugorji_calls_filter").val();
+      console.log("doFilterCalls: " + xRegex);
+      $("#ugorji_call_logs tr").show();
+      if($.trim(xRegex).length > 0) {
+        $("#ugorji_call_logs tr").not($("#ugorji_call_logs tr:contains('" + xRegex + "')")).hide();
+        //$("#ugorji_call_logs tr:contains('" + xRegex + "')").hide();
+      }
+    }
+    
     function s(x) {
       var y = x;
       if(y == null) y = '';
       return y;
     }
+    
     function doInit() {
+      var fileExt = ".json";
       populateColorKey();
-      $.getJSON('summary.json', populateSummary);
-      $.getJSON('messages.json', populateMessages);
-      $.getJSON('call_logs.json', populateCallLogs);
+      $.getJSON('summary' + fileExt, populateSummary);
+      $.getJSON('messages' + fileExt, populateMessages);
+      $.getJSON('call_logs' + fileExt, populateCallLogs);
       $("#ugorji_tabs").tabs();
+      $("#ugorji_calls_filter").keypress(filterCalls);
+      $("#ugorji_messages_filter").keypress(filterMessages);
     }
-    //function populateSummary(x) {
-    //  data = JSON.parse(x);
-    //$.get('summary.json', populateSummary);
+    
   </script>
   <script>
   $(document).ready(doInit);
@@ -175,14 +231,22 @@ from javascript without setting a flag. Please use another browser if having a p
 <div class="ugorji_clear"></div>
 <div id="ugorji_tabs">
   <ul>
-    <li><a href="#ugorji_call_logs"><span>Call Logs</span></a></li>
-    <li><a href="#ugorji_messages"><span>Messages</span></a></li>
+    <li><a href="#ugorji_call_logs_tab"><span>Call Logs</span></a></li>
+    <li><a href="#ugorji_messages_tab"><span>Messages</span></a></li>
   </ul>
-  <div id="ugorji_call_logs">
-    Call Logs
+  <div id="ugorji_call_logs_tab">
+    <b>Call Logs</b><br/>
+    <input type="text" id="ugorji_calls_filter" />
+    <label for="ugorji_calls_filter">Type snippet of name, number, call type, ... to filter</label>
+    <br/>
+    <div id="ugorji_call_logs"></div>
   </div>
-  <div id="ugorji_messages">
-    Messages
+  <div id="ugorji_messages_tab">
+    <b>MESSAGES</b><br/>
+    <input type="text" id="ugorji_messages_filter" />
+    <label for="ugorji_messages_filter">Type snippet of name, number, ... to filter</label>
+    <br/>
+    <div id="ugorji_messages"></div>
   </div>
 </div>
 <blockquote>

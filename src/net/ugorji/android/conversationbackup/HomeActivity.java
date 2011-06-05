@@ -25,7 +25,7 @@ public class HomeActivity extends BaseCBActivity {
     CONFIRM_DIALOG = 101,
     EULA_DIALOG = 102;
   
-  private Button processButton;
+  private Button processButton; 
   private ProgressDialog progressDialog;
   private AlertDialog confirmDialog;
   private AlertDialog eulaDialog;

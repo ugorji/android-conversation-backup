@@ -7,9 +7,12 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -42,6 +45,7 @@ public class ProcessingService extends IntentService {
   private NotificationManager notificationManager;
   private File appdir;
   private File resultLogFile;
+  private Map<String,String> numberToDisplayName = new HashMap<String,String>();
   
   public ProcessingService() {
     super("ProcessingService");
@@ -50,6 +54,7 @@ public class ProcessingService extends IntentService {
     resultLogFile = Helper.RESULT_LOG_FILE;
   }
 
+  @Override
   protected void onHandleIntent(Intent intent) {
     try {
       //runMyServiceBS();
@@ -178,15 +183,17 @@ public class ProcessingService extends IntentService {
       
       whereClause = Helper.Cols.THREAD_ID + " IN (" + Helper.write(msThreadIds, ", ", "'", "'") + ")";
       projection = new String[] {Helper.Cols.ID, Helper.Cols.THREAD_ID, 
+                                 Helper.Cols.NAME, 
                                  Helper.Cols.ADDRESS, Helper.Cols.DATE, 
                                  Helper.Cols.SUBJECT, Helper.Cols.BODY,
                                  Helper.Cols.MMS_MESSAGE_BOX, Helper.Cols.SMS_MESSAGE_BOX, 
-                                 Helper.Cols.MMS_TRANSACTION_ID, Helper.Cols.THREAD_ID, 
+                                 Helper.Cols.MMS_TRANSACTION_ID, 
       }; // Helper.Cols.TYPE_DISCRIMINATOR_COLUMN, 
       //try null projection, to see if we get MMS - projection cannot be null
       //projection = null;
       cur = getContentResolver().query
         (Helper.Cols.COMPLETE_CONVERSATIONS_CONTENT_URI, projection, whereClause, null, Helper.Cols.DATE);
+      Log.d(TAG, "Column Names: " + Arrays.toString(cur.getColumnNames()));
       if(cur.moveToFirst()) {
         do {
           Ms sms = new Ms();
@@ -199,6 +206,10 @@ public class ProcessingService extends IntentService {
           sms.mms = ((s = cur.getString(cur.getColumnIndex(Helper.Cols.MMS_TRANSACTION_ID))) != null && s.trim().length() > 0);
           String msgboxCol = (sms.mms ? Helper.Cols.MMS_MESSAGE_BOX : Helper.Cols.SMS_MESSAGE_BOX);
           sms.sender = (cur.getInt(cur.getColumnIndex(msgboxCol)) != Helper.Cols.MESSAGE_BOX_INBOX);
+          //sms.name = cur.getString(cur.getColumnIndex(Helper.Cols.NAME)); //null; //TBD
+          sms.name = getDisplayName(sms.number);
+          
+          Log.d(TAG, String.format("MS Info: Number: %s, Name: %s", sms.number, sms.name));
           if(sms.mms) {
             sms.timestamp = sms.timestamp * 1000; // mms timestamp is in seconds
             Log.d(TAG, "Found mms: #: " + sms.number + ", text: " + sms.text + ", id: " + sms.id);
@@ -240,6 +251,8 @@ public class ProcessingService extends IntentService {
                null,
                Helper.Cols.PART_SEQ);
             if(curpart.moveToFirst()) {
+              ByteArrayOutputStream baos = new ByteArrayOutputStream(256);
+              byte[] buffer = new byte[256];
               do {
                 MmsEntry mmse = new MmsEntry();
                 mmse.text = curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_TEXT));
@@ -257,26 +270,27 @@ public class ProcessingService extends IntentService {
                       partURI + ", partData: " + partData + ", partLoc: " + partLoc + ", filename: " +
                       mmse.filename + ", text: " + mmse.text);
                 //e.g. smil.xml has no data (so don't even try to find stuff)
-                if(partData != null) {
+                if(partData != null) { 
                   mmse.filename = partLoc;
-                  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                  baos.reset();
                   InputStream is = null;
                   try {
                     is = getContentResolver().openInputStream(partURI);
                     if(is != null) {
-                      byte[] buffer = new byte[256];
+                      //byte[] buffer = new byte[256];
                       int len = -1;
                       while((len = is.read(buffer)) >= 0) baos.write(buffer, 0, len);
                     }
                   } finally {
                     baos.flush();
                     Helper.close(is, baos);
-                    mmse.content = baos.toByteArray();
+                    //mmse.content = baos.toByteArray();
                   }
                   //write attachment to file
                   OutputStream ffos = new FileOutputStream
                     (new File(tmpdir, "mms." + mms.id + "." + mmse.filename));
-                  ffos.write(mmse.content);
+                  //ffos.write(mmse.content);
+                  baos.writeTo(ffos);
                   ffos.flush();
                   Helper.close(ffos);
                 }
@@ -378,6 +392,7 @@ public class ProcessingService extends IntentService {
     updateProgress(getString(R.string.completed_processing), 100);
   }
   
+  @SuppressWarnings("unused")
   private void runMyServiceBS() {
     //use the values here to do the work
     for(int i = 0; i <= 10; i++) {
@@ -421,5 +436,21 @@ public class ProcessingService extends IntentService {
     //Helper.doSleep(2000);
   }
 
+  private String getDisplayName(String number) {
+    Log.d(TAG, "getDisplayName: " + number);
+    if(Helper.SAFETY_RETURN_NULL_FOR_DISPLAY_NAME) return null;
+    if(numberToDisplayName.containsKey(number)) return numberToDisplayName.get(number);
+    String n = null;
+    Uri uri = Uri.withAppendedPath(Helper.Cols.PHONE_LOOKUP_URI, Uri.encode(number));
+    Cursor cur = getContentResolver().query(uri, new String[]{Helper.Cols.DISPLAY_NAME}, null, null, null);
+    if(cur.moveToFirst()) {
+      n = cur.getString(0);
+    } 
+    cur.close();
+    numberToDisplayName.put(number, n);
+    Log.d(TAG, String.format("getDisplayName: %s ==> %s", number, n));
+    return n;
+  }
+  
 }
 
