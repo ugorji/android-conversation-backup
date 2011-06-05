@@ -1,6 +1,8 @@
 package net.ugorji.android.conversationbackup;
 
 import java.io.InputStreamReader;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -8,8 +10,11 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.Contacts;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,29 +35,41 @@ public class HomeActivity extends BaseCBActivity {
   private AlertDialog confirmDialog;
   private AlertDialog eulaDialog;
   private Intent emailIntent;
-  
+  private Button selectContactButton;
+  private EditText specNumBackupEditView;
   // private OnClickListener checkboxListener;
   
+  @Override
   protected void onCreateBaseCallback() {
     if(Helper.SAFETY_DEV_MODE) {
       Helper.debugAllContentResolvers(this);
-      Helper.getPreferences(this).edit().putString(Helper.PREFERENCE_EULA_ACCEPTED, "-").commit();
+      Helper.getPreferences(this).edit().putString(Helper.PREFERENCE_EULA_ACCEPTED, Helper.VERSION).commit();
     }
     SharedPreferences sharedPreferences = Helper.getPreferences(this);
     if(!sharedPreferences.getString(Helper.PREFERENCE_EULA_ACCEPTED, "-").equals(Helper.VERSION)) {
       showDialog(EULA_DIALOG);
     }
     setContentView(R.layout.main);
+    specNumBackupEditView = (EditText)findViewById(R.id.specific_numbers_to_backup_edit);
     aboutAppButton = (Button)findViewById(R.id.about_app);
     exitAppButton = (Button)findViewById(R.id.exit_app);    
     processButton = (Button)findViewById(R.id.confirm);
     processButton.setOnClickListener(new View.OnClickListener() {
+        @Override
         public void onClick(View view) {
           Log.d(TAG, "process button clicked");
           showDialog(CONFIRM_DIALOG);
         }
       });
-    
+    selectContactButton = (Button)findViewById(R.id.select_contact);
+    selectContactButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          Log.d(TAG, "select contact button clicked");
+          Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+          startActivityForResult(intent, Helper.SELECT_CONTACT_REQUEST);
+        }
+      });
     // checkboxListener = new OnClickListener() {
     //     public void onClick(View v) {
     //     }
@@ -68,11 +85,15 @@ public class HomeActivity extends BaseCBActivity {
     resetState(sharedPreferences, R.id.specific_numbers_to_backup_edit, "specific_numbers_to_backup_edit", false);
     
     final CheckBox backupAllCB = (CheckBox)findViewById(R.id.backup_all_numbers);
-    final EditText specNumBackupEditView = (EditText)findViewById(R.id.specific_numbers_to_backup_edit);
+    final EditText specNumBackupEditView2 = specNumBackupEditView;
+    final Button selectContactButton2 = selectContactButton;
     specNumBackupEditView.setEnabled(!backupAllCB.isChecked());
+    selectContactButton.setEnabled(!backupAllCB.isChecked());
     backupAllCB.setOnClickListener(new View.OnClickListener() {
+        @Override
         public void onClick(View v) {
-          specNumBackupEditView.setEnabled(!backupAllCB.isChecked());
+          specNumBackupEditView2.setEnabled(!backupAllCB.isChecked());
+          selectContactButton2.setEnabled(!backupAllCB.isChecked());
         }
       });            
     
@@ -89,6 +110,7 @@ public class HomeActivity extends BaseCBActivity {
   //   super.onSaveInstanceState(savedInstanceState);
   // }
 
+  @Override
   protected Dialog onCreateDialog(int id) {
     Dialog dialog = super.onCreateDialog(id);
     if(dialog != null) return dialog;
@@ -110,11 +132,13 @@ public class HomeActivity extends BaseCBActivity {
         .setMessage(eulaMsg)
         .setCancelable(false)
         .setPositiveButton(getString(R.string.eula_accept), new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int id) {
               sharedPreferences.edit().putString(Helper.PREFERENCE_EULA_ACCEPTED, Helper.VERSION).commit();
             }
           })
         .setNegativeButton(getString(R.string.eula_refuse), new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int id) {
               dialog.cancel();
               HomeActivity.this.finish();
@@ -131,12 +155,14 @@ public class HomeActivity extends BaseCBActivity {
         .setMessage(getString(R.string.start_processing_prompt_message))
         .setCancelable(false)
         .setPositiveButton(getString(R.string.prompt_yes), new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int id) {
               HomeActivity.this.process();
               //HomeActivity.this.finish();
             }
           })
         .setNegativeButton(getString(R.string.prompt_no), new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int id) {
               dialog.cancel();
             }
@@ -163,6 +189,7 @@ public class HomeActivity extends BaseCBActivity {
     return dialog;
   }
 
+  @Override
   protected void onPrepareDialog(int id, Dialog dialog) {
     switch(id) {
     case PROGRESS_DIALOG:
@@ -172,6 +199,7 @@ public class HomeActivity extends BaseCBActivity {
     }
   }
   
+  @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     Log.d(TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: " + resultCode);
     Log.d(TAG, "onActivityResult: RESULT_OK: " + RESULT_OK);
@@ -183,7 +211,37 @@ public class HomeActivity extends BaseCBActivity {
       //so don't be specific TBD
       longMsg = getString(R.string.email_sent);
       processingDone(longMsg);
+    } else if(requestCode == Helper.SELECT_CONTACT_REQUEST) {
+      if(resultCode == RESULT_OK) addSelectedContactNumbers(data);
     }
+  }
+  
+  private void addSelectedContactNumbers(Intent data) {
+    Log.d(TAG, "addSelectedContactNumbers");
+    StringBuilder sb = new StringBuilder();
+    Set<String> phNums = new LinkedHashSet<String>();
+    String s = null;
+    Uri contactData = data.getData();
+    Cursor c = getContentResolver().query(contactData, null, null, null, null);
+    String contactId = null;
+    if(c.moveToFirst()) contactId = c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
+    c.close();
+    c = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ contactId,null, null);
+    if(c.moveToFirst()) {
+      do {
+        s = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+        //canonicalize it
+        sb.setLength(0);
+        for(int i = 0; i < s.length(); i++) {
+          char ch = s.charAt(i);
+          if(ch >= '0' && ch <= '9') sb.append(ch);
+        }
+        phNums.add(sb.toString());
+      } while(c.moveToNext());
+    }
+    c.close();
+    Log.d(TAG, String.format("addSelectedContactNumbers: contactId: %s, numbers: %s", contactId, phNums));
+    specNumBackupEditView.setText(specNumBackupEditView.getText() + " " + Helper.write(phNums, " ", "", ""));
   }
   
   private void processingDone(String longMsg) {
@@ -195,6 +253,7 @@ public class HomeActivity extends BaseCBActivity {
     startActivity(new Intent(this, ResultActivity.class));
   }
   
+  @Override
   protected void updateProgress(Intent intent) {
     Bundle extras = intent.getExtras(); 
     updateProgress(extras.getString("message"), 
@@ -204,6 +263,7 @@ public class HomeActivity extends BaseCBActivity {
     
   }
   
+  @Override
   public void onPause() {
     super.onPause();
     if(progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();

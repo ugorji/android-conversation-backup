@@ -156,9 +156,24 @@ take the phone number, and return the display name.
 fixes
 
 - fixed potential out of memory error as we held onto each attachment in memory while uploading
-- added contact name to the json for easy correlation
-- added search to the UI (so you can filter by name
+- added contact name in the messages view for easy correlation
+- added search to the UI (so you can filter by name, number, call type / message type, etc)
+- changed how viewing works, so it works on Google Chrome and all browsers 
+- allow selecting specific contacts through contacts picker
+- improved viewing performance
 
+view for sms, mms, incoming, outgoing, etc
+
+ie flags column
+
+search can specify many things
+- we will tokenize on space and comma
+- then we will take each token, and check in each row
+- then we will find all matches, and have those ones be visible
+
+make everything faster
+
+so u can filter for: mms ibongile incoming missed etc
 
 
 

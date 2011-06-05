@@ -2,6 +2,7 @@ package net.ugorji.android.conversationbackup;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -35,7 +37,7 @@ import android.util.Log;
 
 public class Helper { 
   private static boolean INITED = false;
-  static final String VERSION = "1.0.2";
+  static final String VERSION = "1.1";
   
   //TBD fix safety checks
   static final boolean 
@@ -61,11 +63,11 @@ public class Helper {
     SHOW_RESULT_ACTION = "net.ugorji.android.conversationbackup.SHOW_RESULT",
     SHARED_PREFERENCES_KEY = "shared_preferences",
     ASSET_EULA = "EULA",
-    ASSET_HTML_VIEWER = "index.html",
     PREFERENCE_EULA_ACCEPTED = "eula.accepted";
 
   static final int 
-    SEND_ARCHIVE_REQUEST = 2;
+    SEND_ARCHIVE_REQUEST = 2,
+    SELECT_CONTACT_REQUEST = 4;
 
   static final IntentFilter 
     PROGRESS_INTENT_FILTER = new IntentFilter();
@@ -155,6 +157,7 @@ public class Helper {
     public long id;
     public String number;
     public String name;
+    @Override
     public int compareTo(Ho s2) {
       if(timestamp < s2.timestamp) return -1;
       else if(timestamp > s2.timestamp) return 1;
@@ -177,6 +180,7 @@ public class Helper {
   public static class Cl extends Ho {
     public int duration;
     public String type;
+    @Override
     public JSONObject toJSON() throws Exception {
       //new JSONObject(this, FIELDS)
       JSONObject jobj = super.toJSON();
@@ -195,6 +199,7 @@ public class Helper {
     public boolean sender;
     public List<MmsEntry> entries = new ArrayList<MmsEntry>();
     
+    @Override
     public JSONObject toJSON() throws Exception {
       //new JSONObject(this, FIELDS)
       JSONObject jobj = super.toJSON();
@@ -227,6 +232,7 @@ public class Helper {
   }
   
   public static class MsComparator implements Comparator<Ms> {
+    @Override
     public int compare(Ms o1, Ms o2) {
       return (int)(o1.timestamp - o2.timestamp);
     }
@@ -261,14 +267,24 @@ public class Helper {
     catch(InterruptedException ie) { }
   }
 
-  public static void writeJSON(String tag, JSONArray jsonarr, File outfile) throws Exception {
+  public static void copyAssets(Service svc, File outdir, String... fileNames)  throws Exception {
+    for(String fileName: fileNames) {
+      FileOutputStream fos = new FileOutputStream(new File(outdir, fileName));
+      InputStream htmlis = svc.getAssets().open(fileName);
+      copy(htmlis, fos, true);
+      close(fos, htmlis);
+    }
+  }
+  
+  public static void writeJSON(String tag, JSONArray jsonarr, File outdir) throws Exception {
     JSONObject jobj = new JSONObject();
     jobj.put(tag, jsonarr);
-    writeJSON(jobj, outfile);
+    writeJSON(tag, jobj, outdir);
   }
 
-  public static void writeJSON(JSONObject jobj, File outfile) throws Exception {
-    PrintWriter pw = new PrintWriter(new FileWriter(outfile));
+  public static void writeJSON(String tag, JSONObject jobj, File outdir) throws Exception {
+    PrintWriter pw = new PrintWriter(new FileWriter(new File(outdir, "acb_" + tag + ".js")));
+    pw.print("var acb_" + tag + " = ");
     pw.println(jobj.toString(2));   
     pw.flush();
     close(pw);

@@ -23,12 +23,15 @@ public abstract class BaseCBActivity extends Activity {
   protected String fatalMessage = "";
   protected Button aboutAppButton;
   protected Button exitAppButton;
+  protected Button homeButton;
   
+  @Override
   protected void onNewIntent(Intent intent) {
     Log.d(TAG, "Calling onNewIntent");
     if(intent.getBooleanExtra(Helper.EXIT_ACTION, false)) finish();
   }
   
+  @Override
   protected Dialog onCreateDialog(int id) {
     Dialog dialog = null;
     AlertDialog.Builder builder = null;
@@ -38,6 +41,7 @@ public abstract class BaseCBActivity extends Activity {
         .setMessage("FATAL: " + fatalMessage)
         .setCancelable(false)
         .setPositiveButton(getString(R.string.prompt_yes), new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int id) {
               BaseCBActivity.this.finish();
             }
@@ -49,11 +53,13 @@ public abstract class BaseCBActivity extends Activity {
     return dialog;
   }
   
+  @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     try {
       Helper.init();
       progressReceiver = new BroadcastReceiver() {
+          @Override
           public void onReceive(Context context, Intent intent) {
             String mAction = intent.getAction();
             if(mAction.equals(Helper.UPDATE_PROGRESS_ACTION)) {
@@ -62,12 +68,22 @@ public abstract class BaseCBActivity extends Activity {
           }
         };
       onCreateBaseCallback();
+      if(homeButton != null) {
+        homeButton.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            startActivity(new Intent(BaseCBActivity.this, HomeActivity.class));
+          }
+        });
+      }
       aboutAppButton.setOnClickListener(new View.OnClickListener() {
+          @Override
           public void onClick(View view) {
             showAboutApp(TAG);
           }
         });
       exitAppButton.setOnClickListener(new View.OnClickListener() {
+          @Override
           public void onClick(View view) {
             finish();
             //Intent exi = new Intent(ResultActivity.this, HomeActivity.class);
@@ -83,11 +99,13 @@ public abstract class BaseCBActivity extends Activity {
     }
   }
   
+  @Override
   public void onResume() {
     super.onResume();
     registerReceiver(progressReceiver, Helper.PROGRESS_INTENT_FILTER);
   }
   
+  @Override
   public void onPause() {
     super.onPause();
     unregisterReceiver(progressReceiver);

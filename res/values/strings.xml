@@ -15,16 +15,18 @@
   <string name="main_result_delete_after_backup">Delete After Backup?</string>
   <string name="main_result_email_backup">Send backup (via email)?</string>
   <string name="main_result_random_question">Random Question?</string>
+  <string name="main_result_ellipsis">...</string>
   
   <!-- java code -->
   <string name="app_name">Conversation Backup</string>
   <string name="home_activity_name">Conversation Backup Home</string>
   <string name="result_activity_name">Conversation Backup Summary</string>
   <string name="hello">Hello World, Home!</string>
-  <string name="summary">Conversation Backup will backup SMS, MMS and call records which you want to archive into a human-readable zip file, with viewing tools.</string>
+  <string name="summary">Conversation Backup will backup SMS, MMS and call records into a human-readable zip archive file, with bundled html viewer.</string>
   <string name="backup_conversation">Backup Conversation</string>
   <string name="run_backup">Run Backup</string>
   <string name="about_app">About App</string>
+  <string name="home">Home</string>
   <string name="exit_app">Done</string>
   <string name="attached_message">Attached.</string>
   <string name="attached_subject">Conversation Backup Archive</string>

@@ -1,0 +1,64 @@
+body {
+    background-color: #ffffff; 
+    margin: 0px;
+    padding: 0px;
+}
+
+th, pre, h1, h2, h3, h4, h5, h6 {
+    background-color: #e5ecf9; 
+}
+
+table, th, td {
+    border: 1px solid #c0c0c0;
+}
+
+h1, h2 {
+ 	border-bottom: 1px solid #3c78b5;
+}
+
+table {
+    margin: 2px 0px 5px 0px;
+    border-collapse: collapse;
+}
+
+th  {
+    padding: 2px 4px 2px 4px;
+    text-align: center;
+    vertical-align: top;
+}
+
+td  {
+    padding: 3px 4px 3px 4px;
+    vertical-align: top;
+}
+
+.ugorji_call_missed, .ugorji_message_mms_sender {
+    background: #ffcccc;
+}
+.ugorji_call_incoming, .ugorji_message_mms {
+    background: #ccffcc;
+}
+.ugorji_call_outgoing, .ugorji_message_sender {
+    background: #ccccff;
+}
+.ugorji_loaded { }
+.ugorji_space {
+    padding: 3px 4px 3px 4px;
+    float: left;
+}
+.ugorji_clear {
+    clear:both;
+}
+.ugorji_note, blockquote {
+    border-color: #3c78b5;
+    background: #f0fff0;
+    border: 1px solid #3cd8f5;
+    padding: 5px 5px 5px 7px;
+    margin: 0px 0px 0px 5px;
+}
+#ugorji_summary {
+    float: left;
+}
+#ugorji_color_key {
+    float:left;
+}

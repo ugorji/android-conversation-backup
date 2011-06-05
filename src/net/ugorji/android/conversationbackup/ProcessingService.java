@@ -6,9 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +40,7 @@ import android.util.Log;
 
 public class ProcessingService extends IntentService {
   private static final String TAG = ProcessingService.class.getSimpleName();
+  private static final DateFormat DF = new SimpleDateFormat("EEE_yyyy_MM_dd__HH_mm_ss__z");
   private static final int PROCESSING_NOTIFICATION_ID = 1;
   
   private Intent updateIntent;
@@ -96,7 +100,8 @@ public class ProcessingService extends IntentService {
        " OR ", Helper.Cols.ADDRESS + " like '%", "'");
     // boolean  = sharedPreferences.getBoolean("");
 
-    File tmpdir = new File(appdir, "android-conversation-backup-" + System.currentTimeMillis() + "-contents");
+    String backupDestName = "android_conversation_backup__" + DF.format(new Date());
+    File tmpdir = new File(appdir, backupDestName);
     if(!tmpdir.mkdirs()) throw new RuntimeException("Unable to create directory for backup files: " + tmpdir);
     
     //initialize result file
@@ -159,7 +164,7 @@ public class ProcessingService extends IntentService {
         } while(cur.moveToNext());
       }
       cur.close();
-      Helper.writeJSON("call_logs", jsonarr, new File(tmpdir, "call_logs.json"));
+      Helper.writeJSON("call_logs", jsonarr, tmpdir);
       updateProgress(getString(R.string.progress_backup_call_records) + getString(R.string.done) + ": call_logs.json", (percentCompl += percentIncr));
     }
     
@@ -317,21 +322,18 @@ public class ProcessingService extends IntentService {
       
       JSONArray jsonarr = new JSONArray();
       for(Ms ms: allms) jsonarr.put(ms.toJSON());
-      Helper.writeJSON("messages", jsonarr, new File(tmpdir, "messages.json"));
+      Helper.writeJSON("messages", jsonarr, tmpdir);
       updateProgress(getString(R.string.writing_messages_to_json) + getString(R.string.done), percentCompl);
     }
 
     //now create summary file
-    Helper.writeJSON(summ.toJSON(), new File(tmpdir, "summary.json"));
+    Helper.writeJSON("summary", summ.toJSON(), tmpdir);
     
-    //create index.html file
-    FileOutputStream fos = new FileOutputStream(new File(tmpdir, "index.html"));
-    InputStream htmlis = getAssets().open(Helper.ASSET_HTML_VIEWER);
-    Helper.copy(htmlis, fos, true);
-    Helper.close(fos, htmlis);
+    //create assets
+    Helper.copyAssets(this, tmpdir, "index.html", "acb_script.js", "acb_style.css");
     
     //now package all into a zip file
-    File zipfile = new File(appdir, System.currentTimeMillis() + ".android-conversation-backup.zip");
+    File zipfile = new File(appdir, backupDestName + ".zip");
     updateIntent.putExtra("zipfile", zipfile.getAbsolutePath());
     updateProgress(getString(R.string.creating_zip_file) + getString(R.string.ellipsis), percentCompl);
     File[] filess = tmpdir.listFiles();
