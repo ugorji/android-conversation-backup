@@ -39,11 +39,11 @@
     <EditText android:id="@+id/specific_numbers_to_backup_edit" 
               android:layout_width="fill_parent"
               android:layout_height="wrap_content" 
-              android:text=""  />
+              android:text="" />
     <Button android:id="@+id/select_contact" 
             android:layout_width="wrap_content" 
             android:layout_height="wrap_content" 
-            android:text="@string/main_result_ellipsis" />
+            android:text="@string/main_result_select_contact" />
     <View android:id="@+id/divider"
           android:background="@drawable/black_white_gradient"
           android:layout_width="fill_parent"

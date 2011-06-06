@@ -40,7 +40,7 @@ import android.util.Log;
 
 public class ProcessingService extends IntentService {
   private static final String TAG = ProcessingService.class.getSimpleName();
-  private static final DateFormat DF = new SimpleDateFormat("EEE_yyyy_MM_dd__HH_mm_ss__z");
+  private static final DateFormat DF = new SimpleDateFormat("EEE_yyyy_MM_dd__HH_mm_ss");
   
   private Intent updateIntent;
   //private Intent notificationIntent;
