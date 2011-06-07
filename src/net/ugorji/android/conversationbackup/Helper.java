@@ -16,11 +16,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -37,16 +39,17 @@ import android.util.Log;
 
 public class Helper { 
   private static boolean INITED = false;
-  static final String VERSION = "1.1";
+  static final String VERSION = "1.1"; 
+   
+  //TBD ensure you set this to false for production
+  static final boolean SAFETY_DEV_MODE = true;
   
-  //TBD fix safety checks
   static final boolean 
-    SAFETY_ALLOW_DELETE_AFTER_BACKUP = true, //change to true before shipping
-    SAFETY_ALLOW_DELETE_TMP_DIR = true, //change to true before shipping
-    SAFETY_DEV_MODE = false, //change to false before shipping
-    SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = false, //change to false for shipping
-    SAFETY_XYZ = false; //random unused one
-
+    SAFETY_ALLOW_DELETE_AFTER_BACKUP = SAFETY_DEV_MODE ? false : true, 
+    SAFETY_ALLOW_DELETE_TMP_DIR = SAFETY_DEV_MODE ? false : true, 
+    SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = SAFETY_DEV_MODE ? false : false,
+    SAFETY_XYZ = false; 
+  
   static final String
     SAFETY_DEV_EMAIL_ADDRESS = null; //"ugorji@gmail.com"; //change to null before shipping
   
@@ -287,11 +290,13 @@ public class Helper {
   public static void writeJSON(String tag, JSONObject jobj, File outdir) throws Exception {
     PrintWriter pw = new PrintWriter(new FileWriter(new File(outdir, "acb_" + tag + ".js")));
     pw.print("var acb_" + tag + " = ");
-    pw.println(jobj.toString(2));   
+    //pw.println(jobj.toString(2));
+    //jobj.write(pw);
+    writeJSON(pw, jobj, 2, 0);
+    pw.println();
     pw.flush();
     close(pw);
   }
-  
   
   public static String write(Collection<?> c, Object separator, Object prefix, Object postfix) {
     StringBuilder sb = new StringBuilder();
@@ -422,6 +427,87 @@ public class Helper {
 
   static SharedPreferences getPreferences(Activity activity) {
     return activity.getSharedPreferences(Helper.SHARED_PREFERENCES_KEY, Activity.MODE_PRIVATE);
+  }
+
+  static void writeJSON(Appendable sb, JSONObject jo, int indentFactor, int indent) throws Exception {
+    int i;
+    int length = jo.length();
+    if(length == 0) {
+      sb.append("{}");
+      return;
+    }
+    Iterator<String>     keys = jo.keys();
+    int          newindent = indent + indentFactor;
+    String       object;
+    sb.append("{");
+    boolean addComma = false;
+    if (length == 1) {
+      object = keys.next();
+      sb.append(JSONObject.quote(object.toString()));
+      sb.append(": ");
+      writeJSONValue(sb, jo.get(object), indentFactor, indent);
+      //sb.append(valueToString(jo.get(object), indentFactor, indent));
+      addComma = true;
+    } else {
+      while (keys.hasNext()) {
+        object = keys.next();
+        if(addComma) sb.append(",");
+        sb.append('\n');
+        addComma = true;
+        for (i = 0; i < newindent; i += 1) {
+          sb.append(' ');
+        }
+        sb.append(JSONObject.quote(object.toString()));
+        sb.append(": ");
+        writeJSONValue(sb, jo.get(object), indentFactor, indent);
+        //sb.append(valueToString(jo.get(object), indentFactor, newindent));
+      }
+      if(addComma) {
+        sb.append('\n');
+        for (i = 0; i < indent; i += 1) {
+          sb.append(' ');
+        }
+      }
+    }
+    sb.append('}');
+  }
+
+  static void writeJSON(Appendable sb, JSONArray jo, int indentFactor, int indent) throws Exception {
+    int len = jo.length();
+    if (len == 0) {
+      sb.append("[]");
+      return;
+    }
+    int i;
+    sb.append("[");
+    if (len == 1) {
+      writeJSONValue(sb, jo.get(0), indentFactor, indent);
+    } else {
+      int newindent = indent + indentFactor;
+      sb.append('\n');
+      for (i = 0; i < len; i += 1) {
+        if (i > 0) {
+          sb.append(",\n");
+        }
+        for (int j = 0; j < newindent; j += 1) {
+          sb.append(' ');
+        }
+        writeJSONValue(sb, jo.get(i), indentFactor, newindent);
+      }
+      sb.append('\n');
+      for (i = 0; i < indent; i += 1) {
+        sb.append(' ');
+      }
+    }
+    sb.append(']');
+  }
+
+  private static void writeJSONValue(Appendable sb, Object o, int indentFactor, int indent) throws Exception {
+    if(o == null) sb.append("null");
+    else if(o instanceof String) sb.append(JSONObject.quote((String)o));
+    else if(o instanceof JSONObject) writeJSON(sb, (JSONObject)o, indentFactor, indent);
+    else if(o instanceof JSONArray) writeJSON(sb, (JSONArray)o, indentFactor, indent);
+    else sb.append(o.toString());
   }
 
 }

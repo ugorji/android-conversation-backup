@@ -133,9 +133,8 @@ Notes:
 
 UPDATE CHECKLIST
 ================
-- Update SAFETY_XXX variables in Helper
-- in AndroidManifest.xml, increment versionCode (+1) and versionName (appropriately)
-- update versionName to be same as value in Helper.VERSION
+- In Helper.java, change SAFETY_DEV_MODE to false and update VERSION appropriately
+- in AndroidManifest.xml, increment versionCode (+1) and versionName (to be value of Helper.VERSION plus optional minor version) and set android:debuggable to false
 
 NEW FEATURES
 ============
@@ -166,37 +165,11 @@ fixes
 - show flags: FOR messages: sms, mms, incoming, outgoing.
 - clicking DONE on ResultActivity/HomeActivity should clear all notifications
 
-Add Note that email may not work if your file is too large and rejected 
-- my doFilter2 is very slow
+1.1.2 fixes
 
-(test that it works for showing all after filtering)
-- works on FF. Filtering hangs on Chrome. very slow. seems hide/show one by one on chrome is slow as heck.
+- use phone_numbers_equal during search for more accurate matches
+- remove timezone from zip name (un-named timezone caused errors creating files on few devices)
+- add sample search string to index.html pages
+- use streaming of JSON directly to file to prevent errors on few devices with very low memory
 
-view for sms, mms, incoming, outgoing, etc
-
-ie flags column
-
-search can specify many things
-- we will tokenize on space and comma
-- then we will take each token, and check in each row
-- then we will find all matches, and have those ones be visible
-
-make everything faster
-
-so u can filter for: mms ibongile incoming missed etc
-
-
-
-
-acb_messages.js
-acb_call_logs.js
-acb_summary.js
-acb_script.js
-acb_style.css
-index.html
-[ ... attachments ... ]
-
-dir/zip name: acb_2011_01_20__23_10_12__UTC[.zip]
-
-use script src to load everything.
 

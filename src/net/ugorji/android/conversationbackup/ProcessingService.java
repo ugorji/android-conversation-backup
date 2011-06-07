@@ -91,12 +91,22 @@ public class ProcessingService extends IntentService {
     summ.delete_after_backup = summ.delete_after_backup && Helper.SAFETY_ALLOW_DELETE_AFTER_BACKUP;
     //specific_numbers_to_backup_edit = Helper.write
     //  (Helper.tokens(specific_numbers_to_backup_edit, " ,'\"", true, true), ",", "'", "'");
+
+    // String specific_numbers_to_backup_edit_where_clause = Helper.write
+    //   (Helper.tokens(summ.specific_numbers_to_backup_edit, " ,'\"", true, true), 
+    //    " OR ", CallLog.Calls.NUMBER + " like '%", "'");
+    // String specific_addresses_to_backup_edit_where_clause = Helper.write
+    //   (Helper.tokens(summ.specific_numbers_to_backup_edit, " ,'\"", true, true), 
+    //    " OR ", Helper.Cols.ADDRESS + " like '%", "'");
+
+
     String specific_numbers_to_backup_edit_where_clause = Helper.write
       (Helper.tokens(summ.specific_numbers_to_backup_edit, " ,'\"", true, true), 
-       " OR ", CallLog.Calls.NUMBER + " like '%", "'");
+       " OR ", " PHONE_NUMBERS_EQUAL(" + CallLog.Calls.NUMBER + ", '", "', 0)");
     String specific_addresses_to_backup_edit_where_clause = Helper.write
       (Helper.tokens(summ.specific_numbers_to_backup_edit, " ,'\"", true, true), 
-       " OR ", Helper.Cols.ADDRESS + " like '%", "'");
+       " OR ", " PHONE_NUMBERS_EQUAL(" + Helper.Cols.ADDRESS + ", '", "', 0)");
+
     // boolean  = sharedPreferences.getBoolean("");
 
     String backupDestName = "android_conversation_backup__" + DF.format(new Date());
@@ -128,6 +138,7 @@ public class ProcessingService extends IntentService {
       callLogsWhereClause = whereClause;
       String[] projection = new String[] {Calls._ID, Calls.TYPE, Calls.CACHED_NAME, 
                                           Calls.NUMBER, Calls.DATE, Calls.DURATION};
+      Log.d(TAG, String.format("backup_call_records: whereClause: %s", callLogsWhereClause));
       Cursor cur = getContentResolver().query
         (CallLog.Calls.CONTENT_URI, projection, whereClause, null, Calls.DATE);
       JSONArray jsonarr = new JSONArray();
@@ -176,6 +187,7 @@ public class ProcessingService extends IntentService {
       String whereClause = (summ.backup_all_numbers ? null : specific_addresses_to_backup_edit_where_clause);
       messagesWhereClause = whereClause;
       String[] projection = new String[] {Helper.Cols.ADDRESS, Helper.Cols.THREAD_ID};
+      Log.d(TAG, String.format("backup_messages: whereClause: %s", messagesWhereClause));
       Cursor cur = getContentResolver().query
         (Helper.Cols.COMPLETE_CONVERSATIONS_CONTENT_URI, projection, whereClause, null, null);
       if(cur.moveToFirst()) {
