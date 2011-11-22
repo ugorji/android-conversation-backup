@@ -42,7 +42,7 @@ public class Helper {
   static final String VERSION = "1.1"; 
    
   //TBD ensure you set this to false for production
-  static final boolean SAFETY_DEV_MODE = true;
+  static final boolean SAFETY_DEV_MODE = false;
   
   static final boolean 
     SAFETY_ALLOW_DELETE_AFTER_BACKUP = SAFETY_DEV_MODE ? false : true, 

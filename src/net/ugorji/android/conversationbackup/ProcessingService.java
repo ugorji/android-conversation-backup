@@ -365,6 +365,7 @@ public class ProcessingService extends IntentService {
         while((flen = fin.read(zbuf)) != -1) {
           zout.write(zbuf, 0, flen);
         }
+        zout.flush();
         zout.closeEntry();
         Helper.close(fin);
       }

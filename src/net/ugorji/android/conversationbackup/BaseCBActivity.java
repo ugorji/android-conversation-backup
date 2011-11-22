@@ -111,7 +111,7 @@ public abstract class BaseCBActivity extends Activity {
   @Override
   public void onPause() {
     super.onPause();
-    unregisterReceiver(progressReceiver);
+    if(progressReceiver != null) unregisterReceiver(progressReceiver);
   }
   
   protected abstract void onCreateBaseCallback();
