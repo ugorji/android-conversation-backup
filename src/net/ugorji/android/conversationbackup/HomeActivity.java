@@ -133,14 +133,14 @@ public class HomeActivity extends BaseCBActivity {
         .setCancelable(false)
         .setPositiveButton(getString(R.string.eula_accept), new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(DialogInterface dialog1, int id_) {
               sharedPreferences.edit().putString(Helper.PREFERENCE_EULA_ACCEPTED, Helper.VERSION).commit();
             }
           })
         .setNegativeButton(getString(R.string.eula_refuse), new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
-              dialog.cancel();
+            public void onClick(DialogInterface dialog1, int id1) {
+              dialog1.cancel();
               HomeActivity.this.finish();
             }
           });
@@ -156,15 +156,15 @@ public class HomeActivity extends BaseCBActivity {
         .setCancelable(false)
         .setPositiveButton(getString(R.string.prompt_yes), new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(DialogInterface dialog1, int id1) {
               HomeActivity.this.process();
               //HomeActivity.this.finish();
             }
           })
         .setNegativeButton(getString(R.string.prompt_no), new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
-              dialog.cancel();
+            public void onClick(DialogInterface dialog1, int id1) {
+              dialog1.cancel();
             }
           });
       Log.d(TAG, "Builder done");

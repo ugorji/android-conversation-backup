@@ -20,9 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import java.nio.charset.Charset;
 
 import org.json.JSONArray;
-import org.json.JSONException;
+//import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -40,6 +41,8 @@ import android.util.Log;
 public class Helper { 
   private static boolean INITED = false;
   static final String VERSION = "1.1"; 
+  //static final Charset UTF_8 = Charset.forName("UTF-8")
+  static final Charset US_ASCII = Charset.forName("US-ASCII");
    
   //TBD ensure you set this to false for production
   static final boolean SAFETY_DEV_MODE = false;
@@ -436,6 +439,7 @@ public class Helper {
       sb.append("{}");
       return;
     }
+    @SuppressWarnings("unchecked")
     Iterator<String>     keys = jo.keys();
     int          newindent = indent + indentFactor;
     String       object;
@@ -472,6 +476,16 @@ public class Helper {
     sb.append('}');
   }
 
+  //used for names 
+  static String toAsciiFilename(String name) {
+    if(name != null) {
+      int idx = name.lastIndexOf("/");
+      if(idx >= 0) name = name.substring(idx + 1);
+      name = US_ASCII.decode(US_ASCII.encode(name)).toString();
+    }
+    return name;
+  }
+  
   static void writeJSON(Appendable sb, JSONArray jo, int indentFactor, int indent) throws Exception {
     int len = jo.length();
     if (len == 0) {

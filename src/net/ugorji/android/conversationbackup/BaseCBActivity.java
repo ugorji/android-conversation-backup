@@ -43,7 +43,7 @@ public abstract class BaseCBActivity extends Activity {
         .setCancelable(false)
         .setPositiveButton(getString(R.string.prompt_yes), new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(DialogInterface dialog_, int id_) {
               BaseCBActivity.this.finish();
             }
           });

@@ -277,7 +277,7 @@ public class ProcessingService extends IntentService {
                 //if text matches <smil> ... </smil>, skip it
                 if(mmse.text != null && Helper.SMIL_PATTERN.matcher(mmse.text).matches()) continue;
                 mms.entries.add(mmse);
-                mmse.filename = curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_FILENAME));
+                mmse.filename = Helper.toAsciiFilename(curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_FILENAME)));
                 Log.d(TAG, "Backing up Attachment for: " + mms.id + " ... " + mmse.filename);
                 //Uri partURI = Uri.parse(curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_DATA)));
                 String partId = curpart.getString(curpart.getColumnIndex(Helper.Cols.ID));
@@ -289,7 +289,7 @@ public class ProcessingService extends IntentService {
                       mmse.filename + ", text: " + mmse.text);
                 //e.g. smil.xml has no data (so don't even try to find stuff)
                 if(partData != null) { 
-                  mmse.filename = partLoc;
+                  mmse.filename = Helper.toAsciiFilename(partLoc);
                   baos.reset();
                   InputStream is = null;
                   try {
