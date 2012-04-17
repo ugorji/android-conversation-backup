@@ -114,7 +114,7 @@ Files being used
 ~/depot/android-conversation-backup/res/values/strings.xml
 ~/depot/android-conversation-backup/src/net/ugorji/android/conversationbackup/ProcessingService.java
 ~/depot/android-conversation-backup/src/net/ugorji/android/conversationbackup/HomeActivity.java
- ~/depot/android-conversation-backup/src/net/ugorji/android/conversationbackup/Helper.java
+~/depot/android-conversation-backup/src/net/ugorji/android/conversationbackup/Helper.java
 ~/depot/android-conversation-backup/AndroidManifest.xml
 ~/Documents/scratch.txt
 /opt/android-src/packages/providers/TelephonyProvider/src/com/android/providers/telephony/MmsSmsProvider.java
@@ -134,7 +134,8 @@ Notes:
 UPDATE CHECKLIST
 ================
 - In Helper.java, change SAFETY_DEV_MODE to false and update VERSION appropriately
-- in AndroidManifest.xml, increment versionCode (+1) and versionName (to be value of Helper.VERSION plus optional minor version) and set android:debuggable to false
+- in AndroidManifest.xml, increment versionCode (+1) and versionName 
+  (to be value of Helper.VERSION plus optional minor version) and set android:debuggable to false
 
 NEW FEATURES
 ============

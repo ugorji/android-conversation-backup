@@ -1,11 +1,11 @@
-Conversation Backup v1.1
+Conversation Backup v1.2
 ========================
 
-This tool can backup your SMS messages, MMS messages, and call logs, for a set of numbers specified, or all numbers, into a zip file, which can be emailed to you for archiving. The tool can also delete archived messages and/or call logs from your device if requested.
+This tool can backup your SMS messages, MMS messages, and call logs, for specified or all numbers, into a zip file, which can be emailed to you for archiving. The tool can also delete those messages and/or call logs from your device if requested.
 
-This supports Android 2.1 and above. 
+Supports Android 2.1 and above. 
 
 For information and feedback: 
 http://www.ugorji.net/projects/android-conversation-backup
-Email: ugorji+acb@gmail.com
+Email: ugorji@gmail.com
 

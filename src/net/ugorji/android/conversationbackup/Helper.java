@@ -40,7 +40,7 @@ import android.util.Log;
 
 public class Helper { 
   private static boolean INITED = false;
-  static final String VERSION = "1.1"; 
+  static final String VERSION = "1.2"; 
   //static final Charset UTF_8 = Charset.forName("UTF-8")
   static final Charset US_ASCII = Charset.forName("US-ASCII");
    
