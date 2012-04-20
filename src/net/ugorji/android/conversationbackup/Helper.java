@@ -42,7 +42,7 @@ public class Helper {
   private static boolean INITED = false;
   static final String VERSION = "1.2"; 
   //static final Charset UTF_8 = Charset.forName("UTF-8")
-  static final Charset US_ASCII = Charset.forName("US-ASCII");
+  //static final Charset US_ASCII = Charset.forName("US-ASCII");
    
   //TBD ensure you set this to false for production
   static final boolean SAFETY_DEV_MODE = false;
@@ -476,13 +476,48 @@ public class Helper {
     sb.append('}');
   }
 
-  //used for names 
-  static String toAsciiFilename(String name) {
-    if(name != null) {
-      int idx = name.lastIndexOf("/");
-      if(idx >= 0) name = name.substring(idx + 1);
-      name = US_ASCII.decode(US_ASCII.encode(name)).toString();
+  //used for names.
+  //Zip is messed up because it supports only IBM437 and UTF-8, and to support
+  //UTF-8, you need to set a bit (which java doesnt) and it shouldn't be modified
+  //utf-8 (which java uses). 
+  //A safe way now is to use only ascii bytes, but the
+  //problem with that is that asian-based languages will all decode as ???.
+  //Since we have users from korea, Japan, etc, this will not work.
+  //We have to invent a way to use DOS-supported ASCII characters in filename only.
+  static String toFilename(String name) {
+    int len = 0;
+    if(name == null || (len = name.length()) == 0) return name;
+    int idx = name.lastIndexOf("/");
+    if(idx >= 0) name = name.substring(idx + 1);
+    len = name.length();
+    StringBuilder sb = new StringBuilder(len);
+    StringBuilder sb2 = new StringBuilder();
+    for(int i = 0; i < len; i++) {
+      char c = name.charAt(i);
+      //} else if('!' <= c && 
+      //   c <= '~' &&
+      //   !(c == '"'  || c == '\'' || c == '/' || c == '\\' || 
+      //   c == '*'  || c == ':'  || c == '<' || c == '>'  || 
+      //     c == '?'  || c == '|'  || c == '!' )) {      
+      if(c == ' ' || c == '\t') {
+        sb.append('~');
+      } else if((c >= 'A' && c <= 'Z') ||
+                (c >= 'a' && c <= 'z') ||
+                (c >= '0' && c <= '9') ||
+                (c == '.' || c == '-' || c == '_')) {
+        sb.append(c);
+      } else {
+        sb.append('~');
+        sb2.append(Integer.toHexString(c));
+      }
     }
+    name = sb.toString();
+    if(sb2.length() > 0) {
+      //original name should be at end, so extension stays at the end.
+      name = sb2.toString() + "~~~~" + name;
+    }
+    
+    //name = US_ASCII.decode(US_ASCII.encode(name)).toString();
     return name;
   }
   

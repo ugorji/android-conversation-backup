@@ -40,7 +40,7 @@ import android.util.Log;
 
 public class ProcessingService extends IntentService {
   private static final String TAG = ProcessingService.class.getSimpleName();
-  private static final DateFormat DF = new SimpleDateFormat("EEE_yyyy_MM_dd__HH_mm_ss");
+  private static final DateFormat DF = new SimpleDateFormat("yyyy_MM_dd__HH_mm_ss");
   
   private Intent updateIntent;
   //private Intent notificationIntent;
@@ -277,7 +277,7 @@ public class ProcessingService extends IntentService {
                 //if text matches <smil> ... </smil>, skip it
                 if(mmse.text != null && Helper.SMIL_PATTERN.matcher(mmse.text).matches()) continue;
                 mms.entries.add(mmse);
-                mmse.filename = Helper.toAsciiFilename(curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_FILENAME)));
+                mmse.filename = Helper.toFilename(curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_FILENAME)));
                 Log.d(TAG, "Backing up Attachment for: " + mms.id + " ... " + mmse.filename);
                 //Uri partURI = Uri.parse(curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_DATA)));
                 String partId = curpart.getString(curpart.getColumnIndex(Helper.Cols.ID));
@@ -289,7 +289,7 @@ public class ProcessingService extends IntentService {
                       mmse.filename + ", text: " + mmse.text);
                 //e.g. smil.xml has no data (so don't even try to find stuff)
                 if(partData != null) { 
-                  mmse.filename = Helper.toAsciiFilename(partLoc);
+                  mmse.filename = Helper.toFilename(partLoc);
                   baos.reset();
                   InputStream is = null;
                   try {
