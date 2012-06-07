@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import java.nio.charset.Charset;
 
 import org.json.JSONArray;
 //import org.json.JSONException;
@@ -52,9 +51,6 @@ public class Helper {
     SAFETY_ALLOW_DELETE_TMP_DIR = SAFETY_DEV_MODE ? false : true, 
     SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = SAFETY_DEV_MODE ? false : false,
     SAFETY_XYZ = false; 
-  
-  static final String
-    SAFETY_DEV_EMAIL_ADDRESS = null; //"ugorji@gmail.com"; //change to null before shipping
   
   static final Pattern
     SMIL_PATTERN = Pattern.compile(".*<smil>(.*)</smil>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
@@ -141,7 +137,7 @@ public class Helper {
     public boolean backup_call_records;
     public boolean delete_after_backup;
     public boolean random_question;
-    public boolean email_backup;
+    public boolean share_archive;
     public String specific_numbers_to_backup_edit;
     public JSONObject toJSON() throws Exception {
       JSONObject jobj = new JSONObject();
@@ -153,7 +149,7 @@ public class Helper {
       jobj.put("backup_call_records", backup_call_records);
       jobj.put("delete_after_backup", delete_after_backup);
       //jobj.put("random_question", random_question);
-      jobj.put("email_backup", email_backup);
+      jobj.put("share_archive", share_archive);
       jobj.put("specific_numbers_to_backup_edit", specific_numbers_to_backup_edit);
       return jobj;
     }

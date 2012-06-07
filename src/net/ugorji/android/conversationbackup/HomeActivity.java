@@ -1,6 +1,7 @@
 package net.ugorji.android.conversationbackup;
 
 import java.io.InputStreamReader;
+import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class HomeActivity extends BaseCBActivity {
   private ProgressDialog progressDialog;
   private AlertDialog confirmDialog;
   private AlertDialog eulaDialog;
-  private Intent emailIntent;
+  private Intent shareIntent;
   private Button selectContactButton;
   private EditText specNumBackupEditView;
   // private OnClickListener checkboxListener;
@@ -80,7 +81,7 @@ public class HomeActivity extends BaseCBActivity {
     resetState(sharedPreferences, R.id.backup_mms_attachments, "backup_mms_attachments", true);
     resetState(sharedPreferences, R.id.backup_call_records, "backup_call_records", true);
     resetState(sharedPreferences, R.id.delete_after_backup, "delete_after_backup", false);
-    resetState(sharedPreferences, R.id.email_backup, "email_backup", true);
+    resetState(sharedPreferences, R.id.share_archive, "share_archive", true);
     resetState(sharedPreferences, R.id.random_question, "random_question", true);
     resetState(sharedPreferences, R.id.specific_numbers_to_backup_edit, "specific_numbers_to_backup_edit", false);
     
@@ -97,12 +98,12 @@ public class HomeActivity extends BaseCBActivity {
         }
       });            
     
-    emailIntent = new Intent(android.content.Intent.ACTION_SEND); 
-    emailIntent.setType("message/rfc822");
-    //emailIntent.setType("application/zip");
-    if(Helper.SAFETY_DEV_EMAIL_ADDRESS != null) emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[] {Helper.SAFETY_DEV_EMAIL_ADDRESS}); 
-    emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, getString(R.string.attached_message)); 
-    emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.attached_subject)); 
+    shareIntent = new Intent(Intent.ACTION_SEND); 
+    //shareIntent.setType("message/rfc822");
+    shareIntent.setType("application/zip");
+    //shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"blah@blah.com"}); 
+    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.attached_message)); 
+    shareIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.attached_subject)); 
   }
   
   // public void onSaveInstanceState(Bundle savedInstanceState) { 
@@ -205,11 +206,11 @@ public class HomeActivity extends BaseCBActivity {
     Log.d(TAG, "onActivityResult: RESULT_OK: " + RESULT_OK);
     if(requestCode == Helper.SEND_ARCHIVE_REQUEST) {
       String longMsg = (resultCode == RESULT_OK ?
-                        getString(R.string.email_sent_success) :
-                        getString(R.string.email_sent_fail));
-      //for some reason, we always got RESULT_CANCELLED even when the email was successfully sent
+                        getString(R.string.archive_shared_success) :
+                        getString(R.string.archive_shared_fail));
+      //for some reason, we always got RESULT_CANCELLED even when the email was successfully sent (TODO)
       //so don't be specific TBD
-      longMsg = getString(R.string.email_sent);
+      longMsg = getString(R.string.archive_shared);
       processingDone(longMsg);
     } else if(requestCode == Helper.SELECT_CONTACT_REQUEST) {
       if(resultCode == RESULT_OK) addSelectedContactNumbers(data);
@@ -245,7 +246,7 @@ public class HomeActivity extends BaseCBActivity {
   }
   
   private void processingDone(String longMsg) {
-    if(longMsg == null) longMsg = getString(R.string.email_sent);
+    if(longMsg == null) longMsg = getString(R.string.archive_shared);
     updateProgress(longMsg, null, -1, false);
     //TBD: Preferably Use a broadcast, so everyone can get this.
     Helper.writeToFile(Helper.RESULT_LOG_FILE, true, longMsg, "\n");
@@ -259,7 +260,7 @@ public class HomeActivity extends BaseCBActivity {
     updateProgress(extras.getString("message"), 
                    extras.getString("zipfile"), 
                    extras.getInt("percent_completed"),
-                   extras.getBoolean("email_backup"));
+                   extras.getBoolean("share_archive"));
     
   }
   
@@ -269,17 +270,16 @@ public class HomeActivity extends BaseCBActivity {
     if(progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
   }
   
-  private void updateProgress(String message, String zipfile, int completed, boolean email_backup) {
+  private void updateProgress(String message, String zipfile, int completed, boolean share_archive) {
     if(progressDialog == null) showDialog(PROGRESS_DIALOG);
     progressDialog.setMessage(message);
     if(completed >= 0) progressDialog.setProgress(Math.min(100, completed));
     if(completed >= 100) {
       if(progressDialog.isShowing()) progressDialog.dismiss();
-      if(email_backup) {
-        //call intent to send email
-        emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+ zipfile));
+      if(share_archive) {
+        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(zipfile))); //Uri.parse("file://"+ zipfile));
         startActivityForResult
-          (Intent.createChooser(emailIntent, getString(R.string.email_chooser_message)), 
+          (Intent.createChooser(shareIntent, getString(R.string.share_archive_message)), 
            Helper.SEND_ARCHIVE_REQUEST);
       } else {
         processingDone(null);
@@ -300,7 +300,7 @@ public class HomeActivity extends BaseCBActivity {
     savePrefs(editor, R.id.backup_mms_attachments, "backup_mms_attachments");
     savePrefs(editor, R.id.backup_call_records, "backup_call_records");
     savePrefs(editor, R.id.delete_after_backup, "delete_after_backup");
-    savePrefs(editor, R.id.email_backup, "email_backup");
+    savePrefs(editor, R.id.share_archive, "share_archive");
     savePrefs(editor, R.id.random_question, "random_question");
     savePrefs(editor, R.id.specific_numbers_to_backup_edit, "specific_numbers_to_backup_edit");
     editor.commit();

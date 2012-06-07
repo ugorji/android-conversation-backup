@@ -84,7 +84,7 @@ public class ProcessingService extends IntentService {
     summ.backup_call_records = sharedPreferences.getBoolean("backup_call_records", false);
     summ.delete_after_backup = sharedPreferences.getBoolean("delete_after_backup", false);
     summ.random_question = sharedPreferences.getBoolean("random_question", false);
-    summ.email_backup = sharedPreferences.getBoolean("email_backup", false);
+    summ.share_archive = sharedPreferences.getBoolean("share_archive", false);
     summ.specific_numbers_to_backup_edit = sharedPreferences.getString("specific_numbers_to_backup_edit", "");
 
     //DO SAFETY STUFF
@@ -124,7 +124,7 @@ public class ProcessingService extends IntentService {
       if(summ.backup_call_records) numsteps++;
       if(summ.backup_messages) numsteps++;
     }
-    if(summ.email_backup) numsteps++;
+    if(summ.share_archive) numsteps++;
     numsteps++; //for zipping all files
     int percentIncr = (100 / numsteps) - 1; //reduce slightly, so we're never at 100%
     int percentCompl = 0;
@@ -375,15 +375,9 @@ public class ProcessingService extends IntentService {
     }
     //recursively delete the tmp dir
     if(Helper.SAFETY_ALLOW_DELETE_TMP_DIR) Helper.deleteFile(tmpdir); 
-    //skip the things for delete after backup, email backup, etc
+    //skip the things for delete after backup, share backup, etc
     updateProgress(getString(R.string.creating_zip_file) + getString(R.string.done), (percentCompl += percentIncr));
 
-    // emailing is done from the activity
-    // if(email_backup) {
-    //   updateProgress("emailing zip file ...", percentCompl);
-    //   updateProgress("done emailing zip file", (percentCompl += percentIncr));     
-    // }
-    
     if(summ.delete_after_backup) {
       //delete call logs
       if(summ.backup_call_records) {
@@ -404,7 +398,7 @@ public class ProcessingService extends IntentService {
       }
     }
 
-    updateIntent.putExtra("email_backup", summ.email_backup);
+    updateIntent.putExtra("share_archive", summ.share_archive);
     updateProgress(getString(R.string.completed_processing), 100);
   }
   

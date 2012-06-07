@@ -13,7 +13,7 @@
   <string name="main_result_backup_call_records">Call Records?</string>
   <string name="main_result_options_post_backup_label">Post Backup Options</string>
   <string name="main_result_delete_after_backup">Delete After Backup?</string>
-  <string name="main_result_email_backup">Send backup (via email)?</string>
+  <string name="main_result_share_archive">Send/Share backup?</string>
   <string name="main_result_random_question">Random Question?</string>
   <string name="main_result_select_contact">Select Contact ...</string>
   <string name="main_result_ellipsis">...</string>
@@ -33,10 +33,10 @@
   <string name="attached_subject">Conversation Backup Archive</string>
   <string name="start_processing_prompt_message">Start processing conversation backup?</string>
   <string name="progress_message_default">Processing Conversation backup</string>
-  <string name="email_sent_success">Emailed Conversation Archive SUCCESSFULLY</string>
-  <string name="email_sent_fail">Emailed Conversation Archive FAILED</string>
-  <string name="email_sent">Emailed Conversation Archive</string>
-  <string name="email_chooser_message">Send Conversation Archive ...</string>
+  <string name="archive_shared_success">Sent Conversation Archive SUCCESSFULLY</string>
+  <string name="archive_shared_fail">Sending Conversation Archive FAILED</string>
+  <string name="archive_shared">Sent Conversation Archive</string>
+  <string name="share_archive_message">Send Conversation Archive ...</string>
   <string name="progress_backup_call_records">backing up call records</string>
   <string name="retrieving_messages">retrieving messages</string>
   <string name="backing_up_mms_attachments">backing up MMS attachments</string>

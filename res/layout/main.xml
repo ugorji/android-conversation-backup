@@ -84,21 +84,21 @@
               android:contentDescription="delete_after_backup"
               android:text="@string/main_result_delete_after_backup" />
     <!--
-    <TextView android:id="@+id/email_backup_label" 
+    <TextView android:id="@+id/share_archive_label" 
               android:layout_width="fill_parent"
               android:layout_height="wrap_content" 
-              android:text="Send email to backup below" />
+              android:text="Send backup below" />
     -->
-    <CheckBox android:id="@+id/email_backup"
+    <CheckBox android:id="@+id/share_archive"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:contentDescription="email_backup"
-              android:text="@string/main_result_email_backup" />
+              android:contentDescription="share_archive"
+              android:text="@string/main_result_share_archive" />
     <View android:id="@+id/divider"
           android:background="@drawable/black_white_gradient"
           android:layout_width="fill_parent"
           android:layout_height="1dp"
-          android:layout_below="@id/email_backup" />
+          android:layout_below="@id/share_archive" />
     <LinearLayout 
                   android:orientation="horizontal" 
                   android:layout_width="fill_parent"

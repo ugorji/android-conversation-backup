@@ -10,7 +10,7 @@ Backup conversations (call logs, sms and mms messages for all, or specific numbe
 UI is simple, with only one activity, that gives prompt for
 - backup all conversations or specify numbers to backup for
 - what to backup: call logs, messages, MMS attachments???
-- should we delete backed up items, and should we email u the archive later?
+- should we delete backed up items, and should we send/share (e.g. via email) the archive later?
 
 CONCERNS
 ========
@@ -39,7 +39,7 @@ Some things TBD
 - MMS has not been tested. (not tested ... only in real device)
 - Support for onclick listener (for "backup all") - DONE
 - support delete - DONE
-- support email backup - DONE (not tested ... only in real device)
+- support sharing backup - DONE (not tested ... only in real device)
 
 Note that, for conversations involving more than just one person, they may be deleted when a deletion is done. This is because we now use the thread_ids to delete conversations (since that's the only way we could get things to work).
 
@@ -129,7 +129,7 @@ Files being used
 /opt/android-src/frameworks/base/telephony/java/android/telephony/PhoneNumberUtils.java
 
 Notes:
-- It might say email failed, even though email was successfully sent.
+- It might say share failed, even though email was successfully sent.
 
 UPDATE CHECKLIST
 ================
