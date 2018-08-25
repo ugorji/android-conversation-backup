@@ -1,6 +1,6 @@
 # android-conversation-backup
 
-Purpose: backup and archive text, pictures and other multimedia messages and call logs.
+*Backup and archive text, pictures and other multimedia messages and call logs.*
 
 This tool can backup your SMS messages, MMS messages with included
 attachments, and call records, into a zip archive. You can specify a set
@@ -19,7 +19,7 @@ Download on Google Play: https://play.google.com/store/apps/details?id=net.ugorj
 Google doesn't provide public API's for accessing SMS and MMS.
 
 I had to reverse-engineer the actual android src to know what to do.
-However, this has been tested and works on Androind 2.3 up to Android 5.0.
+However, this has been tested and works on Androind 2.3 up to Android 9.0.
 
 ### Update Checklist
 
