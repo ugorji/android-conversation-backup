@@ -44,7 +44,7 @@
             android:layout_width="wrap_content" 
             android:layout_height="wrap_content" 
             android:text="@string/main_result_select_contact" />
-    <View android:id="@+id/divider"
+    <View
           android:background="@drawable/black_white_gradient"
           android:layout_width="fill_parent"
           android:layout_height="1dp"
@@ -68,7 +68,7 @@
               android:layout_height="wrap_content"
               android:contentDescription="backup_call_records"
               android:text="@string/main_result_backup_call_records" />
-    <View android:id="@+id/divider"
+    <View
           android:background="@drawable/black_white_gradient"
           android:layout_width="fill_parent"
           android:layout_height="1dp"
@@ -94,7 +94,7 @@
               android:layout_height="wrap_content"
               android:contentDescription="share_archive"
               android:text="@string/main_result_share_archive" />
-    <View android:id="@+id/divider"
+    <View
           android:background="@drawable/black_white_gradient"
           android:layout_width="fill_parent"
           android:layout_height="1dp"

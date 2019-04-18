@@ -54,6 +54,14 @@
   <string name="eula_title">EULA</string>
   <string name="eula_accept">Accept</string>
   <string name="eula_refuse">Refuse</string>
+
+  <!-- Permissions Denied -->
+  <string name="perms_title">Permissions</string>
+  <string name="perms_required">Permissions Required</string>
+  <string name="perms_write_external_media">Your permission is needed to write the archive to your external storage partition e.g. SD card</string>
+  <string name="no_external_storage">Cannot proceed - no external storage partition e.g. SD card</string>
+  <string name="error_create_write_directory">Cannot proceed - unable to create directory to write archive</string>
+  
   <!-- RUBBISH -->
   <string name="x">x</string>
   <!-- <string name=""></string> -->

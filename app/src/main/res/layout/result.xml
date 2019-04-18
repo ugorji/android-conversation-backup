@@ -23,7 +23,7 @@
               android:layout_width="fill_parent"
               android:layout_height="wrap_content" 
               android:text="" />
-    <View android:id="@+id/result_divider"
+    <View
           android:background="@drawable/black_white_gradient"
           android:layout_width="fill_parent"
           android:layout_height="1dp"

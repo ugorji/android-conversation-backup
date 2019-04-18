@@ -5,9 +5,10 @@
     do not specify versionCode, versionName or uses-sdk in AndroidManifest.xml anymore.
     Instead, keep them in build,gradle, and have it automatically created.
     Gradle allows us to have multiple setups, without changing core files.
+    
             android:versionCode="10"
             android:versionName="1.2.2"
-            <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="21" />
+            uses-sdk android:minSdkVersion="8" android:targetSdkVersion="21"
     -->
 
     <application
@@ -34,6 +35,17 @@
         </activity>
 
         <service android:name="net.ugorji.android.conversationbackup.ProcessingService" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
     </application>
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -42,9 +54,10 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!--  permissions below allow deleting conversations after backup -->
+    <!-- WRITE_SMS permission is removed from Marshmallow (6.0 2016) -->
     <uses-permission android:name="android.permission.WRITE_SMS" />
-    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
+    <!-- uses-permission android:name="android.permission.WRITE_CONTACTS" -->
     <!-- <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" /> -->
 </manifest>
 
