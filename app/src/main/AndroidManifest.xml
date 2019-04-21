@@ -48,10 +48,12 @@
 
     </application>
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Have to write the archive somewhere -->
+    <!-- uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" / -->
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- uses-permission android:name="android.permission.READ_PHONE_STATE" / -->
+    <!-- needed to get display name for a given number -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!--  permissions below allow deleting conversations after backup -->
     <!-- WRITE_SMS permission is removed from Marshmallow (6.0 2016) -->

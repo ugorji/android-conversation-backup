@@ -61,6 +61,8 @@ public class Helper {
       SHARED_PREFERENCES_KEY = "shared_preferences",
       ASSET_EULA = "EULA",
       PREFERENCE_EULA_ACCEPTED = "eula.accepted";
+
+  static final String RESULT_LOG_FILE_NAME = "result-log.txt";
   
   static final int SEND_ARCHIVE_REQUEST = 2, SELECT_CONTACT_REQUEST = 4;
 
@@ -303,18 +305,37 @@ public class Helper {
     return sb.toString();
   }
 
-  public static void writeToFile(File f, boolean append, String s, String post) {
+  public static File resultLogFile(Context c) {
+    return new File(c.getCacheDir(), RESULT_LOG_FILE_NAME);
+  }
+  
+  public static void writeToResultLog(Context c, boolean append, String s, String post) {
     try {
-      // FileWriter fw = new FileWriter(f, append); //was giving some folks FileNotFoundException
-      FileWriter fw = ((f.exists() && append) ? new FileWriter(f, append) : new FileWriter(f));
-      fw.write(s);
-      if (post != null) fw.write(post);
-      fw.flush();
+      // int mode = Context.MODE_WORLD_READALE;
+      // if(append) mode = mode|Context.MODE_APPEND;
+      // FileOutputStream fos = c.openFileOutput(RESULT_LOG_FILE_NAME, mode);
+      // FileWriter fw = new FileWriter(fos);
+      FileWriter fw = new FileWriter(resultLogFile(c), append);
+      if(s != null) fw.write(s);
+      if(post != null) fw.write(post);
       close(fw);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
+  
+  // public static void writeToFile(File f, boolean append, String s, String post) {
+  //   try {
+  //     // FileWriter fw = new FileWriter(f, append); //was giving some folks FileNotFoundException
+  //     FileWriter fw = ((f.exists() && append) ? new FileWriter(f, append) : new FileWriter(f));
+  //     fw.write(s);
+  //     if (post != null) fw.write(post);
+  //     fw.flush();
+  //     close(fw);
+  //   } catch (Exception e) {
+  //     throw new RuntimeException(e);
+  //   }
+  // }
 
   public static String getFileContents(File f) {
     try {

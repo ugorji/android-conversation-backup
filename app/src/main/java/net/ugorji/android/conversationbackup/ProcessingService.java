@@ -47,8 +47,8 @@ public class ProcessingService extends IntentService {
   // private Intent notificationIntent;
   // private PendingIntent notificationContentIntent;
   private NotificationManager notificationManager;
-  private File appdir;
-  private File resultLogFile;
+  // private File appdir;
+  // private File resultLogFile;
   private Map<String, String> numberToDisplayName = new HashMap<String, String>();
 
   public ProcessingService() {
@@ -62,8 +62,8 @@ public class ProcessingService extends IntentService {
       // runMyServiceBS();
       // Helper.debugAllContentResolvers(this);
       boolean[] args = intent.getBooleanArrayExtra(BuildConfig.APPLICATION_ID + ".perms");
-      appdir = new File(intent.getStringExtra(BuildConfig.APPLICATION_ID + ".appdir"));
-      resultLogFile = new File(intent.getStringExtra(BuildConfig.APPLICATION_ID + ".log"));
+      // appdir = new File(intent.getStringExtra(BuildConfig.APPLICATION_ID + ".appdir"));
+      // resultLogFile = new File(intent.getStringExtra(BuildConfig.APPLICATION_ID + ".log"));
       runMyService(args);
     } catch (RuntimeException e) {
       throw e;
@@ -112,12 +112,13 @@ public class ProcessingService extends IntentService {
     // boolean  = sharedPreferences.getBoolean("");
 
     String backupDestName = "android_conversation_backup__" + DF.format(new Date());
-    File tmpdir = new File(appdir, backupDestName);
+    File tmpdir = new File(getCacheDir(), backupDestName);
     if (!tmpdir.mkdirs())
       throw new RuntimeException("Unable to create directory for backup files: " + tmpdir);
 
     // initialize result file
-    Helper.writeToFile(resultLogFile, false, "", null);
+    Helper.writeToResultLog(this, false, "", null);
+    // Helper.writeToFile(resultLogFile, false, "", null);
 
     int numsteps = 0;
     if (summ.backup_call_records) numsteps++;
@@ -429,7 +430,7 @@ public class ProcessingService extends IntentService {
     Helper.copyAssets(this, tmpdir, "index.html", "acb_script.js", "acb_style.css");
 
     // now package all into a zip file
-    File zipfile = new File(appdir, backupDestName + ".zip");
+    File zipfile = new File(getFilesDir(), backupDestName + ".zip");
     updateIntent.putExtra("zipfile", zipfile.getAbsolutePath());
     updateProgress(
         getString(R.string.creating_zip_file) + getString(R.string.ellipsis), percentCompl);
@@ -513,7 +514,8 @@ public class ProcessingService extends IntentService {
   private void updateProgress(String message, int percent) {
     String longMsg = message + " (" + percent + "%)";
     // Add longMsg to log file
-    Helper.writeToFile(resultLogFile, true, longMsg, "\n");
+    Helper.writeToResultLog(this, true, longMsg, "\n");
+    // Helper.writeToFile(resultLogFile, true, longMsg, "\n");
 
     Log.d(TAG, "ProgressMessage: " + longMsg);
 
@@ -543,7 +545,7 @@ public class ProcessingService extends IntentService {
     // Also, try to use Notificaton.BuilderCompat which is available in older versions.
 
     Intent notificationIntent = new Intent(this, ResultActivity.class);
-    notificationIntent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
+    // notificationIntent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
     PendingIntent notificationContentIntent =
         PendingIntent.getActivity(this, 0, notificationIntent, 0);
     // Notification notification = new Notification(R.drawable.icon, getString(R.string.app_name),

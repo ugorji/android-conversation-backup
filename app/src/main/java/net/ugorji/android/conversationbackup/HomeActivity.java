@@ -104,10 +104,10 @@ public class HomeActivity extends BaseCBActivity {
   private static final int
     PROGRESS_DIALOG = 100,
     CONFIRM_DIALOG = 101,
-    EULA_DIALOG = 102,
-    NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG = 103,
-    NO_EXTERNAL_MEDIA_DIALOG = 104,
-    ERROR_CREATE_WRITE_DIRECTORY_DIALOG = 105;
+    EULA_DIALOG = 102;
+    // NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG = 103,
+    // NO_EXTERNAL_MEDIA_DIALOG = 104,
+    // ERROR_CREATE_WRITE_DIRECTORY_DIALOG = 105;
 
   private ProgressDialog progressDialog;
   // private AlertDialog confirmDialog;
@@ -116,8 +116,8 @@ public class HomeActivity extends BaseCBActivity {
   private EditText specNumBackupEditView;
   // private OnClickListener checkboxListener;
 
-  private File appdir;
-  private File resultLogFile;
+  // private File appdir;
+  // private File resultLogFile;
 
   private Perms rperms;
   private Perms wperms;
@@ -233,15 +233,15 @@ public class HomeActivity extends BaseCBActivity {
     AlertDialog.Builder builder;
     Log.d(TAG, "onCreateDialog");
     switch (id) {
-      case NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG:
-        dialog = permsOkDialog(getString(R.string.perms_write_external_media));
-        break;
-      case NO_EXTERNAL_MEDIA_DIALOG:
-        dialog = permsOkDialog(getString(R.string.no_external_storage));
-        break;
-      case ERROR_CREATE_WRITE_DIRECTORY_DIALOG:
-        dialog = permsOkDialog(getString(R.string.error_create_write_directory));
-        break;
+      // case NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG:
+      //   dialog = permsOkDialog(getString(R.string.perms_write_external_media));
+      //   break;
+      // case NO_EXTERNAL_MEDIA_DIALOG:
+      //   dialog = permsOkDialog(getString(R.string.no_external_storage));
+      //   break;
+      // case ERROR_CREATE_WRITE_DIRECTORY_DIALOG:
+      //   dialog = permsOkDialog(getString(R.string.error_create_write_directory));
+      //   break;
       case EULA_DIALOG:
         Log.d(TAG, "Eula");
         String eulaMsg = null;
@@ -391,13 +391,13 @@ public class HomeActivity extends BaseCBActivity {
       }
       process3();
       break;
-    case Helper.PERMISSION_EXTERNAL_MEDIA:
-      if (status) {
-        process2();
-      } else {
-        showDialog(NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG);
-      }
-      break;
+    // case Helper.PERMISSION_EXTERNAL_MEDIA:
+    //   if (status) {
+    //     process2();
+    //   } else {
+    //     showDialog(NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG);
+    //   }
+    //   break;
     }
   }
 
@@ -443,10 +443,11 @@ public class HomeActivity extends BaseCBActivity {
     if (longMsg == null) longMsg = getString(R.string.archive_shared);
     updateProgress(longMsg, null, -1, false);
     // TBD: Preferably Use a broadcast, so everyone can get this.
-    Helper.writeToFile(resultLogFile, true, longMsg, "\n");
+    Helper.writeToResultLog(this, true, longMsg, "\n");
+    // Helper.writeToFile(resultLogFile, true, longMsg, "\n");
     // show result activity
     Intent intent = new Intent(this, ResultActivity.class);
-    intent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
+    // intent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
     startActivity(intent);
   }
 
@@ -508,38 +509,39 @@ public class HomeActivity extends BaseCBActivity {
     rperms = new Perms();
     wperms = new Perms();
     
-    if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-      showDialog(NO_EXTERNAL_MEDIA_DIALOG);
-      return;
-    }
+    // if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+    //   showDialog(NO_EXTERNAL_MEDIA_DIALOG);
+    //   return;
+    // }
 
-    String perm = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-    if (ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
-      ActivityCompat.requestPermissions(this, new String[]{perm}, Helper.PERMISSION_EXTERNAL_MEDIA);
-      return;
-    }
-    process2();
+    // String perm = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    // if (ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
+    //   ActivityCompat.requestPermissions(this, new String[]{perm}, Helper.PERMISSION_EXTERNAL_MEDIA);
+    //   return;
+    // }
+    // process2();
+    process3();
   }
   
-  private void process2() {
-    boolean status = true;
-    appdir = new File(Environment.getExternalStorageDirectory(),
-                            "Android/data/" + BuildConfig.APPLICATION_ID + "/files");
-    resultLogFile = new File(appdir, "result-log.txt");
-    if (appdir.exists() && !appdir.isDirectory() && !appdir.delete()) {
-      // throw new RuntimeException("A file exists where directory expected: " + appdir);
-      status = false;
-    }
-    if (status && !appdir.exists() && !appdir.mkdirs()) {
-      // throw new RuntimeException("Unable to create directory: " + appdir);
-      status = false;
-    }
-    if(status) {
-      process3();
-    } else {
-      showDialog(ERROR_CREATE_WRITE_DIRECTORY_DIALOG);
-    }      
-  }
+  // private void process2() {
+  //   boolean status = true;
+  //   appdir = new File(Environment.getExternalStorageDirectory(),
+  //                           "Android/data/" + BuildConfig.APPLICATION_ID + "/files");
+  //   resultLogFile = new File(appdir, "result-log.txt");
+  //   if (appdir.exists() && !appdir.isDirectory() && !appdir.delete()) {
+  //     // throw new RuntimeException("A file exists where directory expected: " + appdir);
+  //     status = false;
+  //   }
+  //   if (status && !appdir.exists() && !appdir.mkdirs()) {
+  //     // throw new RuntimeException("Unable to create directory: " + appdir);
+  //     status = false;
+  //   }
+  //   if(status) {
+  //     process3();
+  //   } else {
+  //     showDialog(ERROR_CREATE_WRITE_DIRECTORY_DIALOG);
+  //   }      
+  // }
 
   private Boolean checkPerm(Boolean b, String perm) {
     if(b != null) return b;
@@ -565,7 +567,7 @@ public class HomeActivity extends BaseCBActivity {
     if(summ.delete_after_backup) {
       // if((wperms.sms = checkPerm(wperms.sms, Manifest.permission.WRITE_SMS)) == null) return;
       if((wperms.calls = checkPerm(wperms.calls, Manifest.permission.WRITE_CALL_LOG)) == null) return;
-      if((wperms.contacts = checkPerm(wperms.contacts, Manifest.permission.WRITE_CONTACTS)) == null) return;
+      // if((wperms.contacts = checkPerm(wperms.contacts, Manifest.permission.WRITE_CONTACTS)) == null) return;
     }
     // TODO: check: call processIt if something to do, or show dialog saying "nothing to do"
     processIt();
@@ -583,8 +585,8 @@ public class HomeActivity extends BaseCBActivity {
       b(wperms.sms), b(wperms.calls), b(wperms.contacts), false,
     };
     intent.putExtra(BuildConfig.APPLICATION_ID + ".perms", args);
-    intent.putExtra(BuildConfig.APPLICATION_ID + ".appdir", appdir.getAbsolutePath());
-    intent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
+    // intent.putExtra(BuildConfig.APPLICATION_ID + ".appdir", appdir.getAbsolutePath());
+    // intent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
     
     startService(intent);
     showDialog(PROGRESS_DIALOG);

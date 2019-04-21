@@ -8,7 +8,7 @@ import java.io.File;
 public class ResultActivity extends BaseCBActivity {
   // private static final String TAG = ResultActivity.class.getSimpleName();
   private TextView textview;
-  private File logFile;
+  // private File logFile;
   
   @Override
   protected void onCreateBaseCallback() {
@@ -22,7 +22,7 @@ public class ResultActivity extends BaseCBActivity {
 
   @Override
   protected void updateProgress(Intent intent) {
-    logFile = new File(intent.getStringExtra(BuildConfig.APPLICATION_ID + ".log"));
+    // logFile = new File(intent.getStringExtra(BuildConfig.APPLICATION_ID + ".log"));
     updateText();
   }
 
@@ -34,6 +34,6 @@ public class ResultActivity extends BaseCBActivity {
 
   private void updateText() {
     // read the file and update the contents.
-    textview.setText(Helper.getFileContents(logFile));
+    textview.setText(Helper.getFileContents(Helper.resultLogFile(this)));
   }
 }
