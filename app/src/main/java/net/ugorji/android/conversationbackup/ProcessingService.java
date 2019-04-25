@@ -5,6 +5,7 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,8 +20,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +41,7 @@ import net.ugorji.android.conversationbackup.Helper.Cl;
 import net.ugorji.android.conversationbackup.Helper.MmsEntry;
 import net.ugorji.android.conversationbackup.Helper.Ms;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class ProcessingService extends IntentService {
   private static final String TAG = ProcessingService.class.getSimpleName();
@@ -75,6 +79,10 @@ public class ProcessingService extends IntentService {
   private void runMyService(boolean[] args) throws Exception {
     SharedPreferences sharedPreferences = Helper.getPreferences(this);
 
+    JSONObject callLogJs = new JSONObject();
+    JSONObject messagesJs = new JSONObject();
+    JSONObject summaryJs = new JSONObject();
+    
     Helper.Summary summ = Helper.getSummary(sharedPreferences);
     
     summ.backup_messages = summ.backup_messages && args[0];
@@ -192,7 +200,8 @@ public class ProcessingService extends IntentService {
         } while (cur.moveToNext());
       }
       cur.close();
-      Helper.writeJSON("call_logs", jsonarr, tmpdir);
+      // Helper.writeJSON("call_logs", jsonarr, tmpdir);
+      callLogJs.put("call_logs", jsonarr);
       updateProgress(
           getString(R.string.progress_backup_call_records) + getString(R.string.done),
           (percentCompl += percentIncr));
@@ -418,34 +427,84 @@ public class ProcessingService extends IntentService {
 
       JSONArray jsonarr = new JSONArray();
       for (Ms ms : allms) jsonarr.put(ms.toJSON());
-      Helper.writeJSON("messages", jsonarr, tmpdir);
+      // Helper.writeJSON("messages", jsonarr, tmpdir);
+      messagesJs.put("messages", jsonarr);
       updateProgress(
           getString(R.string.writing_messages_to_json) + getString(R.string.done), percentCompl);
     }
 
     // now create summary file
-    Helper.writeJSON("summary", summ.toJSON(), tmpdir);
+    // Helper.writeJSON("summary", summ.toJSON(), tmpdir);
+    summaryJs = summ.toJSON();
 
     // create assets
-    Helper.copyAssets(this, tmpdir, "index.html", "acb_script.js", "acb_style.css");
+    // Helper.copyAssets(this, tmpdir, "index.html", "acb_script.js", "acb_style.css");
+    // we now create a index.html with js, css and html all inline
+    FileOutputStream fos = new FileOutputStream(new File(tmpdir, "index.html"));
+    PrintWriter pw = new PrintWriter(fos);
+    pw.println("<!DOCTYPE html>\n<html>\n<head>\n");
+    pw.flush();
+    InputStream fis = getAssets().open("index.head.snippet.html");
+    Helper.copy(fis, fos, false);
+    Helper.close(fis);
+    fos.flush();
+    pw.println("<style>\n");
+    pw.flush();
+    fis = getAssets().open("acb_style.css");
+    Helper.copy(fis, fos, false);
+    Helper.close(fis);
+    fos.flush();
+    pw.println("</style>\n");
+    pw.println("<script>\n");
+    pw.print("var acb_summary = ");
+    Helper.writeJSON(pw, summaryJs, 2, 0);
+    pw.println();
+    pw.print("var acb_call_logs = ");
+    Helper.writeJSON(pw, callLogJs, 2, 0);
+    pw.println();
+    pw.print("var acb_messages = ");
+    Helper.writeJSON(pw, messagesJs, 2, 0);
+    pw.println();
+    pw.flush();
+    fis = getAssets().open("acb_script.js");
+    Helper.copy(fis, fos, false);
+    Helper.close(fis);
+    fos.flush();
+    pw.println("\n$(document).ready(doInit);");
+    pw.println("</script>\n</head>");
+    pw.flush();
+    fis = getAssets().open("index.body.html");
+    Helper.copy(fis, fos, false);
+    Helper.close(fis);
+    fos.flush();
+    pw.println("</html>");
+    pw.flush();
+    Helper.close(fos);
+    Helper.close(pw);
 
     // now package all into a zip file
-    File zipfile = new File(getFilesDir(), backupDestName + ".zip");
+    FileOutputStream zfos = openFileOutput(backupDestName + ".zip",
+                                           Context.MODE_PRIVATE);
+    File zipfile = getFileStreamPath(backupDestName + ".zip");
+    // File zipfile = new File(getFilesDir(), backupDestName + ".zip");
     updateIntent.putExtra("zipfile", zipfile.getAbsolutePath());
     updateProgress(
         getString(R.string.creating_zip_file) + getString(R.string.ellipsis), percentCompl);
     File[] filess = tmpdir.listFiles();
-    if (filess == null || filess.length == 0) {
-      zipfile.createNewFile();
-      // FileOutputStream foss = new FileOutputStream(zipfile);
-      // foss.flush();
-      // foss.close();
-    } else {
-      ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(zipfile));
-      byte[] zbuf = new byte[1024];
+    // if (filess == null || filess.length == 0) {
+    //   zipfile.createNewFile();
+    //   // FileOutputStream foss = new FileOutputStream(zipfile);
+    //   // foss.flush();
+    //   // foss.close();
+    // } else {
+    ZipOutputStream zout = new ZipOutputStream(zfos); // new FileOutputStream(zipfile));
+    byte[] zbuf = new byte[1024];
+    if (filess != null && filess.length > 0) {
       for (File f : filess) {
+        String fname = f.getName();
+        // if(fname.startsWith("acb_") && (fname.endsWith(".js") || fname.endsWith(".css"))) continue;
         FileInputStream fin = new FileInputStream(f);
-        zout.putNextEntry(new ZipEntry(f.getName()));
+        zout.putNextEntry(new ZipEntry(fname));
         int flen = -1;
         while ((flen = fin.read(zbuf)) != -1) {
           zout.write(zbuf, 0, flen);
@@ -454,10 +513,11 @@ public class ProcessingService extends IntentService {
         zout.closeEntry();
         Helper.close(fin);
       }
-      zout.finish();
-      zout.flush();
-      Helper.close(zout);
     }
+    zout.finish();
+    zout.flush();
+    Helper.close(zfos);
+    Helper.close(zout);
     // recursively delete the tmp dir
     if (Helper.SAFETY_ALLOW_DELETE_TMP_DIR) Helper.deleteFile(tmpdir);
     // skip the things for delete after backup, share backup, etc

@@ -112,7 +112,7 @@ public class HomeActivity extends BaseCBActivity {
   private ProgressDialog progressDialog;
   // private AlertDialog confirmDialog;
   // private AlertDialog eulaDialog;
-  private Intent shareIntent;
+  // private Intent shareIntent;
   private EditText specNumBackupEditView;
   // private OnClickListener checkboxListener;
 
@@ -192,12 +192,6 @@ public class HomeActivity extends BaseCBActivity {
           }
         });
 
-    shareIntent = new Intent(Intent.ACTION_SEND);
-    // shareIntent.setType("message/rfc822");
-    shareIntent.setType("application/zip");
-    // shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"blah@blah.com"});
-    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.attached_message));
-    shareIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.attached_subject));
   }
 
   // public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -344,8 +338,10 @@ public class HomeActivity extends BaseCBActivity {
           (resultCode == RESULT_OK
               ? getString(R.string.archive_shared_success)
               : getString(R.string.archive_shared_fail));
-      // TODO: for some reason, we always got RESULT_CANCELLED even when the email was successfully sent
-      // so don't be specific TBD
+      // For some reason, when sending using email (gmail), we always got RESULT_CANCELLED
+      // even when the email was successfully sent.
+      // see https://stackoverflow.com/questions/17102578/detect-email-sent-or-not-in-onactivity-result
+      // So don't be specific
       longMsg = getString(R.string.archive_shared);
       processingDone(longMsg);
     } else if (requestCode == Helper.SELECT_CONTACT_REQUEST) {
@@ -476,13 +472,9 @@ public class HomeActivity extends BaseCBActivity {
       if (progressDialog.isShowing()) progressDialog.dismiss();
       if (share_archive) {
         // Uri uri = Uri.fromFile(new File(zipfile)); //Uri.parse("file://"+ zipfile));
-        Uri uri =
-            FileProvider.getUriForFile(
-                this, BuildConfig.APPLICATION_ID + ".provider", new File(zipfile));
-        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-        startActivityForResult(
-            Intent.createChooser(shareIntent, getString(R.string.share_archive_message)),
-            Helper.SEND_ARCHIVE_REQUEST);
+        Uri uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", new File(zipfile));
+        startActivityForResult(Intent.createChooser(getShareIntent(uri), getString(R.string.share_archive_message)),
+                               Helper.SEND_ARCHIVE_REQUEST);
       } else {
         processingDone(null);
       }
@@ -607,5 +599,16 @@ public class HomeActivity extends BaseCBActivity {
       if (o instanceof CheckBox) editor.putBoolean(key, ((CheckBox) o).isChecked());
       else if (o instanceof EditText) editor.putString(key, ((EditText) o).getText().toString());
     }
+  }
+
+  private Intent getShareIntent(Uri uri) {
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+    // shareIntent.setType("message/rfc822");
+    shareIntent.setType("application/zip");
+    // shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"blah@blah.com"});
+    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.attached_message));
+    shareIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.attached_subject));
+    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+    return shareIntent;
   }
 }

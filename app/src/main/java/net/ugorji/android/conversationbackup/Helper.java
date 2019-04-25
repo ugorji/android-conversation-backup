@@ -376,7 +376,7 @@ public class Helper {
     } finally {
       if (closeAfter) {
         close(r);
-        close(r);
+        close(w);
       }
     }
   }
