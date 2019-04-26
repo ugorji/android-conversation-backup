@@ -200,8 +200,9 @@ public class ProcessingService extends IntentService {
         } while (cur.moveToNext());
       }
       cur.close();
-      // Helper.writeJSON("call_logs", jsonarr, tmpdir);
+      
       callLogJs.put("call_logs", jsonarr);
+      // Helper.writeJSON("call_logs", jsonarr, tmpdir);
       updateProgress(
           getString(R.string.progress_backup_call_records) + getString(R.string.done),
           (percentCompl += percentIncr));
@@ -437,8 +438,13 @@ public class ProcessingService extends IntentService {
     // Helper.writeJSON("summary", summ.toJSON(), tmpdir);
     summaryJs = summ.toJSON();
 
-    // create assets
-    // Helper.copyAssets(this, tmpdir, "index.html", "acb_script.js", "acb_style.css");
+    if (!Helper.INLINE_RESOURCES_IN_INDEX_HTML) {
+      Helper.writeJSON("call_logs", callLogJs, tmpdir);
+      Helper.writeJSON("messages", messagesJs, tmpdir);
+      Helper.writeJSON("summary", summaryJs, tmpdir);
+      Helper.copyAssets(this, tmpdir, "acb_style.css");
+    } 
+   
     // we now create a index.html with js, css and html all inline
     FileOutputStream fos = new FileOutputStream(new File(tmpdir, "index.html"));
     PrintWriter pw = new PrintWriter(fos);
@@ -448,23 +454,32 @@ public class ProcessingService extends IntentService {
     Helper.copy(fis, fos, false);
     Helper.close(fis);
     fos.flush();
-    pw.println("<style>\n");
-    pw.flush();
-    fis = getAssets().open("acb_style.css");
-    Helper.copy(fis, fos, false);
-    Helper.close(fis);
-    fos.flush();
-    pw.println("</style>\n");
+    if (Helper.INLINE_RESOURCES_IN_INDEX_HTML) {
+      pw.println("<style>\n");
+      pw.flush();
+      fis = getAssets().open("acb_style.css");
+      Helper.copy(fis, fos, false);
+      Helper.close(fis);
+      fos.flush();
+      pw.println("</style>\n");
+    } else {
+      pw.println("<link href=\"acb_style.css\" rel=\"stylesheet\" type=\"text/css\"/>");
+      for(String s2: new String[]{"summary", "call_logs", "messages"}) {
+        pw.println("<script src=\"acb_" + s2 + ".json\"></script>");
+      }
+    }
     pw.println("<script>\n");
-    pw.print("var acb_summary = ");
-    Helper.writeJSON(pw, summaryJs, 2, 0);
-    pw.println();
-    pw.print("var acb_call_logs = ");
-    Helper.writeJSON(pw, callLogJs, 2, 0);
-    pw.println();
-    pw.print("var acb_messages = ");
-    Helper.writeJSON(pw, messagesJs, 2, 0);
-    pw.println();
+    if (Helper.INLINE_RESOURCES_IN_INDEX_HTML) {
+      pw.print("var acb_summary = ");
+      Helper.writeJSON(pw, summaryJs, 2, 0);
+      pw.println();
+      pw.print("var acb_call_logs = ");
+      Helper.writeJSON(pw, callLogJs, 2, 0);
+      pw.println();
+      pw.print("var acb_messages = ");
+      Helper.writeJSON(pw, messagesJs, 2, 0);
+      pw.println();
+    }
     pw.flush();
     fis = getAssets().open("acb_script.js");
     Helper.copy(fis, fos, false);

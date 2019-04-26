@@ -41,14 +41,14 @@ public class Helper {
   // static final Charset UTF_8 = Charset.forName("UTF-8")
   // static final Charset US_ASCII = Charset.forName("US-ASCII");
 
-  // TBD ensure you set this to false for production
+  // TODO: for production, set SAFETY_DEV_MODE=false and INLINE_RESOURCES_IN_INDEX_HTML=true
+  static final boolean INLINE_RESOURCES_IN_INDEX_HTML = false;
   static final boolean SAFETY_DEV_MODE = false;
 
   static final boolean SAFETY_ALLOW_DELETE_AFTER_BACKUP = !SAFETY_DEV_MODE,
     SAFETY_ALLOW_DELETE_TMP_DIR = !SAFETY_DEV_MODE,
-    SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = false, // SAFETY_DEV_MODE ? false : false,
-    SAFETY_XYZ = false;
-
+    SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = false; 
+  
   static final Pattern SMIL_PATTERN =
       Pattern.compile(".*<smil>(.*)</smil>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
@@ -284,7 +284,7 @@ public class Helper {
   }
 
   public static void writeJSON(String tag, JSONObject jobj, File outdir) throws Exception {
-    PrintWriter pw = new PrintWriter(new FileWriter(new File(outdir, "acb_" + tag + ".js")));
+    PrintWriter pw = new PrintWriter(new FileWriter(new File(outdir, "acb_" + tag + ".json")));
     pw.print("var acb_" + tag + " = ");
     // pw.println(jobj.toString(2));
     // jobj.write(pw);
