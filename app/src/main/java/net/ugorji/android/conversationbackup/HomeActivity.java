@@ -1,5 +1,7 @@
 package net.ugorji.android.conversationbackup;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.os.Environment;
 import android.Manifest;
 import android.app.AlertDialog;
@@ -98,13 +100,15 @@ public class HomeActivity extends BaseCBActivity {
     Boolean calls;
     Boolean contacts;
   }
-  
+
+  private String progressMessage = "";
   private static final String TAG = HomeActivity.class.getSimpleName();
 
   private static final int
     PROGRESS_DIALOG = 100,
     CONFIRM_DIALOG = 101,
-    EULA_DIALOG = 102;
+    EULA_DIALOG = 102,
+    BACKUP_DONE_DIALOG = 103;
     // NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG = 103,
     // NO_EXTERNAL_MEDIA_DIALOG = 104,
     // ERROR_CREATE_WRITE_DIRECTORY_DIALOG = 105;
@@ -119,11 +123,34 @@ public class HomeActivity extends BaseCBActivity {
   // private File appdir;
   // private File resultLogFile;
 
+  private BroadcastReceiver progressReceiver;
+  
   private Perms rperms;
   private Perms wperms;
   
   @Override
   protected void onCreateBaseCallback() {
+      if (progressDialog == null) {
+        progressDialog = new ProgressDialog(HomeActivity.this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        // progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        // progressDialog.setIndeterminate(true);
+        progressMessage = getString(R.string.progress_message_default);
+        progressDialog.setMessage(progressMessage);
+        progressDialog.setCancelable(false);
+        progressDialog.setIndeterminate(false);
+        progressDialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.prompt_ok), Helper.DismissDialogOnClick);
+      }
+      progressReceiver =
+          new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+              String mAction = intent.getAction();
+              if (mAction != null && mAction.equals(Helper.UPDATE_PROGRESS_ACTION)) {
+                updateProgress(intent);
+              }
+            }
+          };
     if (Helper.SAFETY_DEV_MODE) {
       Helper.debugAllContentResolvers(this);
       Helper.getPreferences(this)
@@ -138,32 +165,18 @@ public class HomeActivity extends BaseCBActivity {
       showDialog(EULA_DIALOG);
     }
     setContentView(R.layout.main);
+    
     specNumBackupEditView = (EditText) findViewById(R.id.specific_numbers_to_backup_edit);
     aboutAppButton = (Button) findViewById(R.id.about_app);
     exitAppButton = (Button) findViewById(R.id.exit_app);
+    archivesButton = (Button) findViewById(R.id.archives);
     Button processButton = (Button) findViewById(R.id.confirm);
-    processButton.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            Log.d(TAG, "process button clicked");
-            showDialog(CONFIRM_DIALOG);
-          }
-        });
+    processButton.setOnClickListener(view -> showDialog(CONFIRM_DIALOG));
     Button selectContactButton = (Button) findViewById(R.id.select_contact);
-    selectContactButton.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            Log.d(TAG, "select contact button clicked");
-            Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
-            startActivityForResult(intent, Helper.SELECT_CONTACT_REQUEST);
-          }
-        });
-    // checkboxListener = new OnClickListener() {
-    //     public void onClick(View v) {
-    //     }
-    //   };
+    selectContactButton.setOnClickListener(view -> {
+        Intent intent = new Intent(Intent.ACTION_PICK, Contacts.CONTENT_URI);
+        startActivityForResult(intent, Helper.SELECT_CONTACT_REQUEST);
+      });
 
     resetState(sharedPreferences, R.id.backup_all_numbers, "backup_all_numbers", false);
     resetState(sharedPreferences, R.id.backup_messages, "backup_messages", true);
@@ -192,6 +205,7 @@ public class HomeActivity extends BaseCBActivity {
           }
         });
 
+      registerReceiver(progressReceiver, Helper.PROGRESS_INTENT_FILTER);
   }
 
   // public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -200,23 +214,13 @@ public class HomeActivity extends BaseCBActivity {
   // }
 
   private Dialog permsOkDialog(String message) {
-    Log.d(TAG, "Need Perms");
     AlertDialog.Builder builder =
       new AlertDialog.Builder(this)
       .setTitle(R.string.perms_title)
       .setMessage(message)
       .setCancelable(false)
-      .setNeutralButton(getString(R.string.prompt_yes),
-                        new DialogInterface.OnClickListener() {
-                          @Override
-                          public void onClick(DialogInterface dialog1, int id1) {
-                            // HomeActivity.this.process(); //TODO: what happens here? nothing?
-                            // HomeActivity.this.finish();
-                          }
-                        });
-    Log.d(TAG, "Builder done");
+      .setNeutralButton(getString(R.string.prompt_yes), Helper.DismissDialogOnClick);
     Dialog dialog = builder.create();
-    Log.d(TAG, "Builder dialog created done");
     return dialog;
   }
   
@@ -225,18 +229,8 @@ public class HomeActivity extends BaseCBActivity {
     Dialog dialog = super.onCreateDialog(id);
     if (dialog != null) return dialog;
     AlertDialog.Builder builder;
-    Log.d(TAG, "onCreateDialog");
     switch (id) {
-      // case NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG:
-      //   dialog = permsOkDialog(getString(R.string.perms_write_external_media));
-      //   break;
-      // case NO_EXTERNAL_MEDIA_DIALOG:
-      //   dialog = permsOkDialog(getString(R.string.no_external_storage));
-      //   break;
-      // case ERROR_CREATE_WRITE_DIRECTORY_DIALOG:
-      //   dialog = permsOkDialog(getString(R.string.error_create_write_directory));
-      //   break;
-      case EULA_DIALOG:
+    case EULA_DIALOG:
         Log.d(TAG, "Eula");
         String eulaMsg = null;
         try {
@@ -251,32 +245,17 @@ public class HomeActivity extends BaseCBActivity {
                 .setTitle(R.string.eula_title)
                 .setMessage(eulaMsg)
                 .setCancelable(false)
-                .setPositiveButton(
-                    getString(R.string.eula_accept),
-                    new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog1, int id_) {
-                        sharedPreferences
-                            .edit()
-                            .putString(Helper.PREFERENCE_EULA_ACCEPTED, BuildConfig.VERSION_NAME)
-                            .commit();
-                      }
-                    })
-                .setNegativeButton(
-                    getString(R.string.eula_refuse),
-                    new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog1, int id1) {
-                        dialog1.cancel();
-                        HomeActivity.this.finish();
-                      }
-                    });
-        Log.d(TAG, "Builder done");
+                .setPositiveButton(getString(R.string.eula_accept),
+                                   (dialog1, id1) -> sharedPreferences.edit()
+                                   .putString(Helper.PREFERENCE_EULA_ACCEPTED, BuildConfig.VERSION_NAME).commit())
+                .setNegativeButton(getString(R.string.eula_refuse),
+                                   (dialog1, id1) -> {
+                                     dialog1.cancel();
+                                     HomeActivity.this.finish();
+                                   });
         dialog = builder.create();
-        Log.d(TAG, "Builder dialog created done");
         break;
-      case CONFIRM_DIALOG:
-        Log.d(TAG, "Builder about to create");
+    case CONFIRM_DIALOG:
         builder =
             new AlertDialog.Builder(this)
                 .setMessage(getString(R.string.start_processing_prompt_message))
@@ -292,24 +271,18 @@ public class HomeActivity extends BaseCBActivity {
                     })
                 .setNegativeButton(
                     getString(R.string.prompt_no),
-                    new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog1, int id1) {
-                        dialog1.cancel();
-                      }
-                    });
-        Log.d(TAG, "Builder done");
+                    Helper.CancelDialogOnClick);
         dialog = builder.create();
-        Log.d(TAG, "Builder dialog created done");
         break;
-      case PROGRESS_DIALOG:
+    case BACKUP_DONE_DIALOG:
+        builder =
+            new AlertDialog.Builder(this)
+          .setMessage(getString(R.string.completed_processing));
+        dialog = builder.create();
+    case PROGRESS_DIALOG:
         // duh!!! U can't call updateProgress from here
         // updateProgress("Processing Conversation backup", null, 0, false);
-        progressDialog = new ProgressDialog(HomeActivity.this);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        // progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        // progressDialog.setIndeterminate(true);
-        progressDialog.setMessage(getString(R.string.progress_message_default));
+      if (!progressDialog.isShowing()) progressDialog.show();
         dialog = progressDialog;
         break;
       default:
@@ -323,7 +296,8 @@ public class HomeActivity extends BaseCBActivity {
   protected void onPrepareDialog(int id, Dialog dialog) {
     switch (id) {
       case PROGRESS_DIALOG:
-        progressDialog.setMessage("");
+        // progressMessage = getString(R.string.progress_message_default);
+        // progressDialog.setMessage(progressMessage);
         progressDialog.setProgress(0);
         break;
     }
@@ -331,8 +305,8 @@ public class HomeActivity extends BaseCBActivity {
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    Log.d(TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: " + resultCode);
-    Log.d(TAG, "onActivityResult: RESULT_OK: " + RESULT_OK);
+    // Log.d(TAG, "onActivityResult: requestCode: " + requestCode + ", resultCode: " + resultCode);
+    // Log.d(TAG, "onActivityResult: RESULT_OK: " + RESULT_OK);
     if (requestCode == Helper.SEND_ARCHIVE_REQUEST) {
       String longMsg =
           (resultCode == RESULT_OK
@@ -343,7 +317,8 @@ public class HomeActivity extends BaseCBActivity {
       // see https://stackoverflow.com/questions/17102578/detect-email-sent-or-not-in-onactivity-result
       // So don't be specific
       longMsg = getString(R.string.archive_shared);
-      processingDone(longMsg);
+      updateProgress(longMsg, null, 100, false);
+      // processingDone(longMsg);
     } else if (requestCode == Helper.SELECT_CONTACT_REQUEST) {
       if (resultCode == RESULT_OK) addSelectedContactNumbers(data);
     }
@@ -387,13 +362,6 @@ public class HomeActivity extends BaseCBActivity {
       }
       process3();
       break;
-    // case Helper.PERMISSION_EXTERNAL_MEDIA:
-    //   if (status) {
-    //     process2();
-    //   } else {
-    //     showDialog(NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG);
-    //   }
-    //   break;
     }
   }
 
@@ -435,19 +403,6 @@ public class HomeActivity extends BaseCBActivity {
         specNumBackupEditView.getText() + " " + Helper.write(phNums, " ", "", ""));
   }
 
-  private void processingDone(String longMsg) {
-    if (longMsg == null) longMsg = getString(R.string.archive_shared);
-    updateProgress(longMsg, null, -1, false);
-    // TBD: Preferably Use a broadcast, so everyone can get this.
-    Helper.writeToResultLog(this, true, longMsg, "\n");
-    // Helper.writeToFile(resultLogFile, true, longMsg, "\n");
-    // show result activity
-    Intent intent = new Intent(this, ResultActivity.class);
-    // intent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
-    startActivity(intent);
-  }
-
-  @Override
   protected void updateProgress(Intent intent) {
     Bundle extras = intent.getExtras();
     updateProgress(
@@ -461,22 +416,31 @@ public class HomeActivity extends BaseCBActivity {
   public void onPause() {
     super.onPause();
     if (progressDialog != null && progressDialog.isShowing()) progressDialog.dismiss();
+    if (progressReceiver != null) unregisterReceiver(progressReceiver);
   }
 
-  private void updateProgress(
-      String message, String zipfile, int completed, boolean share_archive) {
-    if (progressDialog == null) showDialog(PROGRESS_DIALOG);
-    progressDialog.setMessage(message);
+  @Override
+  public void onResume() {
+    super.onResume();
+    registerReceiver(progressReceiver, Helper.PROGRESS_INTENT_FILTER);
+  }
+
+  private void updateProgress(String message, String zipfile, int completed, boolean share_archive) {
+    // if (progressDialog == null) showDialog(PROGRESS_DIALOG);
+    showDialog(PROGRESS_DIALOG);
+    progressMessage = progressMessage + "\n" + message;
+    progressDialog.setMessage(progressMessage);
     if (completed >= 0) progressDialog.setProgress(Math.min(100, completed));
     if (completed >= 100) {
-      if (progressDialog.isShowing()) progressDialog.dismiss();
+      // if (progressDialog.isShowing()) progressDialog.dismiss();
       if (share_archive) {
+        if (progressDialog.isShowing()) progressDialog.dismiss();
         // Uri uri = Uri.fromFile(new File(zipfile)); //Uri.parse("file://"+ zipfile));
         Uri uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", new File(zipfile));
         startActivityForResult(Intent.createChooser(getShareIntent(uri), getString(R.string.share_archive_message)),
                                Helper.SEND_ARCHIVE_REQUEST);
-      } else {
-        processingDone(null);
+      // } else {
+      //   processingDone(null);
       }
     } else if (completed >= 0) {
       if (!progressDialog.isShowing()) progressDialog.show();
@@ -484,6 +448,9 @@ public class HomeActivity extends BaseCBActivity {
   }
 
   private void process() {
+    progressMessage = getString(R.string.progress_message_default);
+    progressDialog.setMessage(progressMessage);
+        
     // save preferences first (since service needs it)
     SharedPreferences sharedPreferences = Helper.getPreferences(this);
     // getSharedPreferences(Helper.SHARED_PREFERENCES_KEY, MODE_PRIVATE);
@@ -501,40 +468,9 @@ public class HomeActivity extends BaseCBActivity {
     rperms = new Perms();
     wperms = new Perms();
     
-    // if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-    //   showDialog(NO_EXTERNAL_MEDIA_DIALOG);
-    //   return;
-    // }
-
-    // String perm = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-    // if (ActivityCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
-    //   ActivityCompat.requestPermissions(this, new String[]{perm}, Helper.PERMISSION_EXTERNAL_MEDIA);
-    //   return;
-    // }
-    // process2();
     process3();
   }
   
-  // private void process2() {
-  //   boolean status = true;
-  //   appdir = new File(Environment.getExternalStorageDirectory(),
-  //                           "Android/data/" + BuildConfig.APPLICATION_ID + "/files");
-  //   resultLogFile = new File(appdir, "result-log.txt");
-  //   if (appdir.exists() && !appdir.isDirectory() && !appdir.delete()) {
-  //     // throw new RuntimeException("A file exists where directory expected: " + appdir);
-  //     status = false;
-  //   }
-  //   if (status && !appdir.exists() && !appdir.mkdirs()) {
-  //     // throw new RuntimeException("Unable to create directory: " + appdir);
-  //     status = false;
-  //   }
-  //   if(status) {
-  //     process3();
-  //   } else {
-  //     showDialog(ERROR_CREATE_WRITE_DIRECTORY_DIALOG);
-  //   }      
-  // }
-
   private Boolean checkPerm(Boolean b, String perm) {
     if(b != null) return b;
     if (ActivityCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED) {

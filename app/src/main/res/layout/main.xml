@@ -109,6 +109,11 @@
          android:layout_height="wrap_content" 
          android:text="@string/run_backup" />
       <Button 
+         android:id="@+id/archives" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:text="@string/archives" />
+      <Button 
          android:id="@+id/about_app" 
          android:layout_width="wrap_content" 
          android:layout_height="wrap_content" 

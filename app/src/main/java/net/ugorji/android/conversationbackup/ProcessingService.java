@@ -125,7 +125,7 @@ public class ProcessingService extends IntentService {
       throw new RuntimeException("Unable to create directory for backup files: " + tmpdir);
 
     // initialize result file
-    Helper.writeToResultLog(this, false, "", null);
+    // Helper.writeToResultLog(this, false, "", null);
     // Helper.writeToFile(resultLogFile, false, "", null);
 
     int numsteps = 0;
@@ -589,7 +589,7 @@ public class ProcessingService extends IntentService {
   private void updateProgress(String message, int percent) {
     String longMsg = message + " (" + percent + "%)";
     // Add longMsg to log file
-    Helper.writeToResultLog(this, true, longMsg, "\n");
+    // Helper.writeToResultLog(this, true, longMsg, "\n");
     // Helper.writeToFile(resultLogFile, true, longMsg, "\n");
 
     Log.d(TAG, "ProgressMessage: " + longMsg);
@@ -600,33 +600,11 @@ public class ProcessingService extends IntentService {
 
     if (notificationManager == null) {
       notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-      // notificationIntent = new Intent();
-      // notificationIntent = new Intent(this, ResultActivity.class);
-      // notificationIntent = new Intent(Helper.SHOW_RESULT_ACTION);
-      // notificationContentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-      // notificationContentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-      // Intent.FLAG_ACTIVITY_NEW_TASK);
     }
-    // Notification notification = new NotificationBuilder(getApplicationContext())
-    //   .setSmallIcon(R.drawable.icon)
-    //   .setTicker("Android Conversation Backup ...")
-    //   .setWhen(System.currentTimeMillis())
-    //   .setContentTitle("Processing")
-    //   .setContentText(message)
-    //   .setContentIntent(notificationContentIntent)
-    //   .getNotification();
-
-    // TODO 20190415: ensure this block works as replacement for comments below.
-    // Also, try to use Notificaton.BuilderCompat which is available in older versions.
-
-    Intent notificationIntent = new Intent(this, ResultActivity.class);
+    Intent notificationIntent = new Intent(this, HomeActivity.class);
     // notificationIntent.putExtra(BuildConfig.APPLICATION_ID + ".log", resultLogFile.getAbsolutePath());
     PendingIntent notificationContentIntent =
         PendingIntent.getActivity(this, 0, notificationIntent, 0);
-    // Notification notification = new Notification(R.drawable.icon, getString(R.string.app_name),
-    // System.currentTimeMillis());
-    // notification.setLatestEventInfo(getApplicationContext(), getString(R.string.app_name),
-    // longMsg, notificationContentIntent);
     Notification notification =
         new NotificationCompat.Builder(getApplicationContext())
             .setSmallIcon(R.drawable.icon)
@@ -636,7 +614,6 @@ public class ProcessingService extends IntentService {
             .build();
 
     notificationManager.notify(Helper.PROCESSING_NOTIFICATION_ID, notification);
-    // Helper.doSleep(2000);
   }
 
   private String getDisplayName(String number) {

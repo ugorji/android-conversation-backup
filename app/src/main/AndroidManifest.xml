@@ -22,18 +22,16 @@
             <intent-filter>
                 <action android:name="net.ugorji.android.androidconversationbackup.UPDATE_PROGRESS" />
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="net.ugorji.android.conversationbackup.ResultActivity"
+            android:name="net.ugorji.android.conversationbackup.ArchivesActivity"
             android:label="@string/result_activity_name">
             <intent-filter>
-                <action android:name="net.ugorji.android.androidconversationbackup.SHOW_RESULT" />
+                <action android:name="net.ugorji.android.androidconversationbackup.ARCHIVES" />
             </intent-filter>
         </activity>
-
         <service android:name="net.ugorji.android.conversationbackup.ProcessingService" />
 
         <provider

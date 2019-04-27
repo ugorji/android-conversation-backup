@@ -19,7 +19,6 @@ import android.widget.Button;
 
 public abstract class BaseCBActivity extends Activity {
   private static final String TAG = BaseCBActivity.class.getSimpleName();
-  protected BroadcastReceiver progressReceiver;
   protected static final int FATAL_DIALOG = 1;
 
   protected AlertDialog fatalDialog;
@@ -27,10 +26,10 @@ public abstract class BaseCBActivity extends Activity {
   protected Button aboutAppButton;
   protected Button exitAppButton;
   protected Button homeButton;
-
+  protected Button archivesButton;
+  
   @Override
   protected void onNewIntent(Intent intent) {
-    Log.d(TAG, "Calling onNewIntent");
     if (intent.getBooleanExtra(Helper.EXIT_ACTION, false)) finish();
   }
 
@@ -44,7 +43,7 @@ public abstract class BaseCBActivity extends Activity {
             new AlertDialog.Builder(this)
                 .setMessage("FATAL: " + fatalMessage)
                 .setCancelable(false)
-                .setPositiveButton(
+                .setNeutralButton(
                     getString(R.string.prompt_yes),
                     new DialogInterface.OnClickListener() {
                       @Override
@@ -63,17 +62,8 @@ public abstract class BaseCBActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     try {
-      progressReceiver =
-          new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-              String mAction = intent.getAction();
-              if (mAction != null && mAction.equals(Helper.UPDATE_PROGRESS_ACTION)) {
-                updateProgress(intent);
-              }
-            }
-          };
       onCreateBaseCallback();
+      
       if (homeButton != null) {
         homeButton.setOnClickListener(
             new View.OnClickListener() {
@@ -83,17 +73,11 @@ public abstract class BaseCBActivity extends Activity {
               }
             });
       }
-      aboutAppButton.setOnClickListener(
-          new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-              showAboutApp(TAG);
-            }
-          });
-      exitAppButton.setOnClickListener(
-          new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+      if (aboutAppButton != null) {
+        aboutAppButton.setOnClickListener(view -> showAboutApp(TAG));
+      }
+      if (exitAppButton != null) {
+        exitAppButton.setOnClickListener(view -> {
               finish();
               NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
               nm.cancel(Helper.PROCESSING_NOTIFICATION_ID);
@@ -101,30 +85,18 @@ public abstract class BaseCBActivity extends Activity {
               // exi.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
               // exi.putExtra(Helper.EXIT_ACTION, true);
               // startActivity(exi);
-            }
           });
-      registerReceiver(progressReceiver, Helper.PROGRESS_INTENT_FILTER);
+      }
+      if (archivesButton != null) {
+        archivesButton.setOnClickListener(view -> startActivity(new Intent(BaseCBActivity.this, ArchivesActivity.class)));
+      }
     } catch (Exception exc) {
       // show exception in error dialog (which calls finish when done)
       handleFatalMessage(exc.getMessage());
     }
   }
 
-  @Override
-  public void onResume() {
-    super.onResume();
-    registerReceiver(progressReceiver, Helper.PROGRESS_INTENT_FILTER);
-  }
-
-  @Override
-  public void onPause() {
-    super.onPause();
-    if (progressReceiver != null) unregisterReceiver(progressReceiver);
-  }
-
   protected abstract void onCreateBaseCallback();
-
-  protected abstract void updateProgress(Intent intent);
 
   protected void handleFatalMessage(String message) {
     fatalMessage = message;
@@ -133,7 +105,6 @@ public abstract class BaseCBActivity extends Activity {
   }
 
   protected void showAboutApp(String logtag) {
-    Log.d(logtag, "showing about app in market");
     Intent intent = new Intent(Intent.ACTION_VIEW);
     intent.setData(Uri.parse("market://details?id=" + Helper.class.getPackage().getName()));
     startActivity(intent);

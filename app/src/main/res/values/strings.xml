@@ -26,12 +26,16 @@
   <string name="summary">Conversation Backup will backup SMS, MMS and call records into a human-readable zip archive file, with bundled html viewer.</string>
   <string name="backup_conversation">Backup Conversation</string>
   <string name="run_backup">Run Backup</string>
-  <string name="about_app">About App</string>
+  <string name="about_app">About</string>
+  <string name="archives">Archives</string>
   <string name="home">Home</string>
+  <string name="delete">Delete</string>
+  <string name="share">Share</string> 
   <string name="exit_app">Done</string>
   <string name="attached_message">Attached.</string>
   <string name="attached_subject">Conversation Backup Archive</string>
   <string name="start_processing_prompt_message">Start processing conversation backup?</string>
+  <string name="delete_selected_archives_question">Delete selected archives?</string>
   <string name="progress_message_default">Processing Conversation backup</string>
   <string name="archive_shared_success">Sent Conversation Archive SUCCESSFULLY</string>
   <string name="archive_shared_fail">Sending Conversation Archive FAILED</string>
@@ -47,6 +51,7 @@
   <string name="completed_processing">Completed Processing Conversation Backup</string>
   <string name="prompt_yes">Yes</string>
   <string name="prompt_no">No</string>
+  <string name="prompt_ok">Ok</string>
   <string name="ellipsis">" ... "</string>
   <string name="done">" DONE "</string>
   

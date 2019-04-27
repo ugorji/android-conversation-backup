@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/archives_list_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+    android:gravity="center_vertical"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:textColor="@color/archives_list_item"
+    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+    android:checkMark="?android:attr/textCheckMark"
+    />
+<!--
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+android:id="@+id/name"
+android:layout_width="fill_parent"
+android:layout_height="88dip"
+
+android:paddingLeft="2dip"
+android:paddingRight="2dip"
+android:paddingTop="5dip"
+android:paddingBottom="2dip"
+android:drawablePadding="0dip"
+
+android:textSize="13dip"
+android:maxLines="2"
+android:ellipsize="marquee"
+android:fadingEdge="horizontal"
+android:textColor="@color/archives_list_item"
+android:gravity="top|center_horizontal" />
+-->

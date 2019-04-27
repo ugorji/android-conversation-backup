@@ -3,6 +3,7 @@ package net.ugorji.android.conversationbackup;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -57,6 +58,7 @@ public class Helper {
   static final String TAG = Helper.class.getSimpleName(),
       EXIT_ACTION = BuildConfig.APPLICATION_ID + "EXIT_ACTION",
       UPDATE_PROGRESS_ACTION = BuildConfig.APPLICATION_ID + "UPDATE_PROGRESS",
+    ARCHIVES_ACTION = BuildConfig.APPLICATION_ID + "ARCHIVES",
       SHOW_RESULT_ACTION = BuildConfig.APPLICATION_ID + "SHOW_RESULT",
       SHARED_PREFERENCES_KEY = "shared_preferences",
       ASSET_EULA = "EULA",
@@ -69,12 +71,29 @@ public class Helper {
   static final int PROCESSING_NOTIFICATION_ID = 1;
 
   static final IntentFilter PROGRESS_INTENT_FILTER = new IntentFilter();
-
+  static final IntentFilter ARCHIVES_INTENT_FILTER = new IntentFilter();
+  
   static final int PERMISSION_EXTERNAL_MEDIA = 1, PERMISSION_PROCESSING = 2;
 
   static {
     PROGRESS_INTENT_FILTER.addAction(Helper.UPDATE_PROGRESS_ACTION);
+    ARCHIVES_INTENT_FILTER.addAction(Helper.ARCHIVES_ACTION); 
   }
+
+  static DialogInterface.OnClickListener CancelDialogOnClick = new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog1, int id1) {
+        dialog1.cancel();
+      }
+    };
+
+  static DialogInterface.OnClickListener DismissDialogOnClick = new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog1, int id1) {
+        dialog1.dismiss();
+      }
+    };
+
 
   public static class Cols {
     public static String ID = "_id", // Telephony.Mms._ID
@@ -304,38 +323,6 @@ public class Helper {
     }
     return sb.toString();
   }
-
-  public static File resultLogFile(Context c) {
-    return new File(c.getCacheDir(), RESULT_LOG_FILE_NAME);
-  }
-  
-  public static void writeToResultLog(Context c, boolean append, String s, String post) {
-    try {
-      // int mode = Context.MODE_WORLD_READALE;
-      // if(append) mode = mode|Context.MODE_APPEND;
-      // FileOutputStream fos = c.openFileOutput(RESULT_LOG_FILE_NAME, mode);
-      // FileWriter fw = new FileWriter(fos);
-      FileWriter fw = new FileWriter(resultLogFile(c), append);
-      if(s != null) fw.write(s);
-      if(post != null) fw.write(post);
-      close(fw);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
-  // public static void writeToFile(File f, boolean append, String s, String post) {
-  //   try {
-  //     // FileWriter fw = new FileWriter(f, append); //was giving some folks FileNotFoundException
-  //     FileWriter fw = ((f.exists() && append) ? new FileWriter(f, append) : new FileWriter(f));
-  //     fw.write(s);
-  //     if (post != null) fw.write(post);
-  //     fw.flush();
-  //     close(fw);
-  //   } catch (Exception e) {
-  //     throw new RuntimeException(e);
-  //   }
-  // }
 
   public static String getFileContents(File f) {
     try {
