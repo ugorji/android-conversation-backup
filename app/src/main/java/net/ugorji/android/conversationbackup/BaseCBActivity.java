@@ -14,19 +14,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public abstract class BaseCBActivity extends Activity {
   private static final String TAG = BaseCBActivity.class.getSimpleName();
-  protected static final int FATAL_DIALOG = 1;
 
-  protected AlertDialog fatalDialog;
-  protected String fatalMessage = "";
-  protected Button aboutAppButton;
   protected Button exitAppButton;
-  protected Button homeButton;
-  protected Button archivesButton;
+
+  protected Helper.MyDialogFrag dfFatal = new Helper.MyDialogFrag();
   
   @Override
   protected void onNewIntent(Intent intent) {
@@ -34,79 +35,76 @@ public abstract class BaseCBActivity extends Activity {
   }
 
   @Override
-  protected Dialog onCreateDialog(int id) {
-    Dialog dialog = null;
-    AlertDialog.Builder builder = null;
-    switch (id) {
-      case FATAL_DIALOG:
-        builder =
-            new AlertDialog.Builder(this)
-                .setMessage("FATAL: " + fatalMessage)
-                .setCancelable(false)
-                .setNeutralButton(
-                    getString(R.string.prompt_yes),
-                    new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog_, int id_) {
-                        BaseCBActivity.this.finish();
-                      }
-                    });
-        fatalDialog = builder.create();
-        dialog = fatalDialog;
-        break;
-    }
-    return dialog;
-  }
-
-  @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    dfFatal.tag = "fatal";
+    dfFatal.finishId = R.string.prompt_ok;
+    dfFatal.msgView = LayoutInflater.from(this).inflate(R.layout.fatal_message, null);
+    dfFatal.titleId = R.string.fatal_title;
+    
     try {
       onCreateBaseCallback();
       
-      if (homeButton != null) {
-        homeButton.setOnClickListener(
-            new View.OnClickListener() {
-              @Override
-              public void onClick(View view) {
-                startActivity(new Intent(BaseCBActivity.this, HomeActivity.class));
-              }
-            });
-      }
-      if (aboutAppButton != null) {
-        aboutAppButton.setOnClickListener(view -> showAboutApp(TAG));
-      }
       if (exitAppButton != null) {
-        exitAppButton.setOnClickListener(view -> {
-              finish();
-              NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-              nm.cancel(Helper.PROCESSING_NOTIFICATION_ID);
-              // Intent exi = new Intent(ResultActivity.this, HomeActivity.class);
-              // exi.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-              // exi.putExtra(Helper.EXIT_ACTION, true);
-              // startActivity(exi);
-          });
-      }
-      if (archivesButton != null) {
-        archivesButton.setOnClickListener(view -> startActivity(new Intent(BaseCBActivity.this, ArchivesActivity.class)));
+        exitAppButton.setOnClickListener(view -> { finish(); afterFinish(); });
       }
     } catch (Exception exc) {
-      // show exception in error dialog (which calls finish when done)
-      handleFatalMessage(exc.getMessage());
+      handleFatal(exc);
     }
   }
 
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.app_menu, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+    case R.id.app_about:
+      showAboutApp();
+      return true;
+    case R.id.app_home:
+      startActivity(new Intent(BaseCBActivity.this, HomeActivity.class));
+      return true;
+    case R.id.app_archives:
+      startActivity(new Intent(BaseCBActivity.this, ArchivesActivity.class));
+      return true;
+    default:
+      return super.onOptionsItemSelected(item);
+    }
+  }
+  
+  protected void afterFinish() { }
+  
   protected abstract void onCreateBaseCallback();
 
-  protected void handleFatalMessage(String message) {
-    fatalMessage = message;
-    if (fatalDialog != null) fatalDialog.setMessage("FATAL: " + fatalMessage);
-    showDialog(FATAL_DIALOG);
-  }
-
-  protected void showAboutApp(String logtag) {
+  protected void showAboutApp() {
     Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.setData(Uri.parse("market://details?id=" + Helper.class.getPackage().getName()));
+    intent.setData(Uri.parse("market://details?id=" + BuildConfig.APPLICATION_ID));
     startActivity(intent);
   }
+
+  protected void showDialog(Helper.MyDialogFrag d) {
+    // added, attach to window, visible
+    //TODO: was getting "Fragment already added" error, and how to handle fragment not visible?
+    // error before: java.lang.IllegalStateException: Fragment already added
+    if(d.isAdded()) {
+      if(!d.isVisible()) {
+        // what should we do if fragment is hidden???
+      }
+    } else {
+      d.show(getFragmentManager(), d.tag);
+    }
+  }
+
+  protected void handleFatal(Exception exc) {
+      // show exception in error dialog (which calls finish when done)
+      ((TextView)dfFatal.msgView.findViewById(R.id.fatal_message_text)).setText(exc.getMessage());
+      showDialog(dfFatal);
+  }
+  
 }

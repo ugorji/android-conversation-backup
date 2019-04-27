@@ -40,16 +40,6 @@
           android:layout_height="wrap_content"
           android:text="@string/delete" />
       <Button
-          android:id="@+id/archives_home"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/home" />
-      <Button
-          android:id="@+id/archives_about_app"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/about_app" />
-      <Button
           android:id="@+id/archives_exit_app"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"

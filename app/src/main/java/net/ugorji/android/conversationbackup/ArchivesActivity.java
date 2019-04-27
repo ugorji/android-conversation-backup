@@ -18,13 +18,15 @@ import java.util.Formatter;
 
 public class ArchivesActivity extends BaseCBActivity {
   private static final String TAG = ArchivesActivity.class.getSimpleName();
-  private  static final int CONFIRM_DELETE_DIALOG = 201;
+  // private  static final int CONFIRM_DELETE_DIALOG = 201;
   
   private StringBuilder fmtstr = new StringBuilder();
   private Formatter fmt = new Formatter(fmtstr);
 
   private ListView listView;
 
+  private Helper.MyDialogFrag dfDelete = new Helper.MyDialogFrag();
+  
   private class ListEntity {
     private String name;
     private Date date;
@@ -48,15 +50,19 @@ public class ArchivesActivity extends BaseCBActivity {
   
   @Override
   protected void onCreateBaseCallback() {
+    dfDelete.tag = "delete";
+    dfDelete.msgId = R.string.delete_selected_archives_question;
+    dfDelete.actionMsgId = R.string.prompt_yes;
+    dfDelete.cancelId = R.string.prompt_no;
+    dfDelete.setMyAction((dialog1, id1) -> ArchivesActivity.this.delete());
+         
     setContentView(R.layout.archives);
-    aboutAppButton = (Button) findViewById(R.id.archives_about_app);
     exitAppButton = (Button) findViewById(R.id.archives_exit_app);
-    homeButton = (Button) findViewById(R.id.archives_home);
     // updateText();
     Button shareButton = (Button)findViewById(R.id.archives_share);
     shareButton.setOnClickListener(view -> ArchivesActivity.this.share());
     Button deleteButton = (Button)findViewById(R.id.archives_delete);
-    deleteButton.setOnClickListener(view -> showDialog(CONFIRM_DELETE_DIALOG));
+    deleteButton.setOnClickListener(view -> {if(listView.getCheckedItemCount() > 0) showDialog(dfDelete);});
 
     listAdapter = new ArrayAdapter<ListEntity>(this, R.layout.archives_list_item);
     loadListAdapter();
@@ -67,32 +73,10 @@ public class ArchivesActivity extends BaseCBActivity {
   }
 
   @Override
-  protected Dialog onCreateDialog(int id) {
-    Dialog dialog = super.onCreateDialog(id);
-    if (dialog != null) return dialog;
-    AlertDialog.Builder builder;
-    switch (id) {
-    case CONFIRM_DELETE_DIALOG:
-        builder = new AlertDialog.Builder(this)
-          .setMessage(getString(R.string.delete_selected_archives_question))
-          .setCancelable(false)
-          .setPositiveButton(getString(R.string.prompt_yes),
-                             (dialog1, id1) -> ArchivesActivity.this.delete())
-          .setNegativeButton(getString(R.string.prompt_no), Helper.CancelDialogOnClick);
-        dialog = builder.create();
-        break;
-    default:
-      dialog = null;
-    }
-    return dialog;
-  }
-
-
-    
-  @Override
   public void onResume() {
     super.onResume();
     loadListAdapter();
+    listView.clearChoices();
   }
 
   private ArrayList<ListEntity> entities() {
@@ -132,8 +116,6 @@ public class ArchivesActivity extends BaseCBActivity {
     shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
     shareIntent.setType("application/zip");
     startActivity(Intent.createChooser(shareIntent, getString(R.string.share_archive_message)));
-    
-    // listView.clearChoices();
   }
 
   private void delete() {

@@ -1,6 +1,9 @@
 package net.ugorji.android.conversationbackup;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,9 +11,14 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.CallLog;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,8 +66,7 @@ public class Helper {
   static final String TAG = Helper.class.getSimpleName(),
       EXIT_ACTION = BuildConfig.APPLICATION_ID + "EXIT_ACTION",
       UPDATE_PROGRESS_ACTION = BuildConfig.APPLICATION_ID + "UPDATE_PROGRESS",
-    ARCHIVES_ACTION = BuildConfig.APPLICATION_ID + "ARCHIVES",
-      SHOW_RESULT_ACTION = BuildConfig.APPLICATION_ID + "SHOW_RESULT",
+      ARCHIVES_ACTION = BuildConfig.APPLICATION_ID + "ARCHIVES",
       SHARED_PREFERENCES_KEY = "shared_preferences",
       ASSET_EULA = "EULA",
       PREFERENCE_EULA_ACCEPTED = "eula.accepted";
@@ -72,8 +79,6 @@ public class Helper {
 
   static final IntentFilter PROGRESS_INTENT_FILTER = new IntentFilter();
   static final IntentFilter ARCHIVES_INTENT_FILTER = new IntentFilter();
-  
-  static final int PERMISSION_EXTERNAL_MEDIA = 1, PERMISSION_PROCESSING = 2;
 
   static {
     PROGRESS_INTENT_FILTER.addAction(Helper.UPDATE_PROGRESS_ACTION);
@@ -95,8 +100,81 @@ public class Helper {
     };
 
 
-  public static class Cols {
-    public static String ID = "_id", // Telephony.Mms._ID
+  public static class MyDialogFrag extends DialogFragment {
+    int cancelId;
+    int dismissId;
+    int finishId; // cancel dialog and finish the activity
+    int msgId;
+    String msg;
+    View msgView;
+    int titleId;
+    String title;
+    int actionMsgId;
+    DialogInterface.OnClickListener action;
+    String tag;
+
+    void setMyAction(DialogInterface.OnClickListener action) { this.action = action; }
+    
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+      
+      if(titleId != 0) builder.setTitle(getString(titleId));
+      else if(title != null) builder.setTitle(title);
+      
+      if(msgId != 0) builder.setMessage(getString(msgId));
+      else if(msg != null) builder.setMessage(msg);
+      else if(msgView != null) {
+        ViewParent vp = msgView.getParent();
+        if(vp != null && vp instanceof ViewGroup) ((ViewGroup)vp).removeView(msgView);
+        builder.setView(msgView);
+      }
+      
+      // create prompts
+      // - action + finish
+      // - action + cancel
+      // - action + dismiss
+      // - action
+      // - finish (no action)
+      // - dismiss (no action)
+
+      if(action == null) {
+        if(finishId != 0) {
+          builder.setNeutralButton(getString(finishId),
+                                    (dialog1, id1) -> {
+                                      dialog1.dismiss();
+                                      getActivity().finish();
+                                    });
+        } else if(dismissId != 0) {
+          builder.setNeutralButton(getString(dismissId), Helper.DismissDialogOnClick);
+        } else {
+          builder.setNeutralButton(getString(R.string.prompt_ok), Helper.DismissDialogOnClick);
+        }
+      } else {
+        if(finishId != 0) {
+          builder.setPositiveButton(getString(actionMsgId), action);
+          builder.setNegativeButton(getString(finishId),
+                                    (dialog1, id1) -> {
+                                      dialog1.dismiss();
+                                      getActivity().finish();
+                                    });
+        } else if(cancelId != 0) {
+          builder.setPositiveButton(getString(actionMsgId), action);
+          builder.setNegativeButton(getString(cancelId), Helper.CancelDialogOnClick);
+        } else if(dismissId != 0) {
+          builder.setPositiveButton(getString(actionMsgId), action);
+          builder.setNegativeButton(getString(dismissId), Helper.DismissDialogOnClick);
+        } else {
+          builder.setNeutralButton(getString(actionMsgId), action);
+        }
+      }
+      builder.setCancelable(false);
+      return builder.create();
+    }
+  }
+  
+  static class Cols {
+    static String ID = "_id", // Telephony.Mms._ID
         THREAD_ID = "thread_id", // Telephony.Mms.THREAD_ID
         ADDRESS = "address", // Telephony.Sms.ADDRESS
         NAME = "name", // ...
@@ -122,7 +200,7 @@ public class Helper {
         MMS_TRANSACTION_ID = "tr_id", // Telephony.Mms.TRANSACTION_ID
         // = "",
         XYZ = "";
-    public static Uri MMS_CONTENT_URI = Uri.parse("content://mms"), // Telephony.Mms.CONTENT_URI
+    static Uri MMS_CONTENT_URI = Uri.parse("content://mms"), // Telephony.Mms.CONTENT_URI
         MMS_PART_CONTENT_URI =
             Uri.parse("content://mms/part"), // Telephony.Mms.CONTENT_URI + "part"
         MMS_ADDR_CONTENT_URI =
@@ -135,12 +213,12 @@ public class Helper {
         PHONE_LOOKUP_URI = // ContactsContract.PhoneLookup.CONTENT_FILTER_URI
         Uri.parse("content://com.android.contacts/phone_lookup"),
         XYZ2 = null;
-    public static int MESSAGE_BOX_INBOX = 1, // if not in inbox, then the message was not sent by us
+    static int MESSAGE_BOX_INBOX = 1, // if not in inbox, then the message was not sent by us
         PDU_HEADER_FROM = 0x89,
         XYZ3 = 0;
   }
 
-  public static class Summary {
+  static class Summary {
     public long timestamp;
     public boolean backup_all_numbers;
     public boolean backup_messages;
@@ -182,7 +260,7 @@ public class Helper {
   }
 
   // Helper Object (Ho)
-  public static class Ho implements Comparable<Ho> {
+  static class Ho implements Comparable<Ho> {
     public long timestamp;
     public long id;
     public String number;
@@ -209,7 +287,7 @@ public class Helper {
   }
 
   // Call Log (Cl)
-  public static class Cl extends Ho {
+  static class Cl extends Ho {
     public int duration;
     public String type;
 
@@ -224,8 +302,8 @@ public class Helper {
   }
 
   // Message (Ms)
-  public static class Ms extends Ho {
-    // public static final String[] FIELDS = new String[] {"timestamp", "number", "id", "text",
+  static class Ms extends Ho {
+    // static final String[] FIELDS = new String[] {"timestamp", "number", "id", "text",
     // "subject", "mms"};
     public String text;
     public String subject;
@@ -250,8 +328,8 @@ public class Helper {
     }
   }
 
-  public static class MmsEntry {
-    // public static final String[] FIELDS = new String[] {"text", "filename"};
+  static class MmsEntry {
+    // static final String[] FIELDS = new String[] {"text", "filename"};
     public String text;
     // do not store the byte[] content here, as we hold onto memory during processing
     // public byte[] content;
@@ -266,28 +344,28 @@ public class Helper {
     }
   }
 
-  public static class MsComparator implements Comparator<Ms> {
+  static class MsComparator implements Comparator<Ms> {
     @Override
     public int compare(Ms o1, Ms o2) {
       return (int) (o1.timestamp - o2.timestamp);
     }
   }
 
-  public static void deleteFile(File f) {
+  static void deleteFile(File f) {
     if (f.isDirectory()) {
       for (File f2 : f.listFiles()) deleteFile(f2);
     }
     if (!f.delete()) throw new RuntimeException("Unable to delete file: " + f);
   }
 
-  public static void doSleep(long ms) {
+  static void doSleep(long ms) {
     try {
       Thread.sleep(ms);
     } catch (InterruptedException ie) {
     }
   }
 
-  public static void copyAssets(Service svc, File outdir, String... fileNames) throws Exception {
+  static void copyAssets(Service svc, File outdir, String... fileNames) throws Exception {
     for (String fileName : fileNames) {
       FileOutputStream fos = new FileOutputStream(new File(outdir, fileName));
       InputStream htmlis = svc.getAssets().open(fileName);
@@ -296,13 +374,13 @@ public class Helper {
     }
   }
 
-  public static void writeJSON(String tag, JSONArray jsonarr, File outdir) throws Exception {
+  static void writeJSON(String tag, JSONArray jsonarr, File outdir) throws Exception {
     JSONObject jobj = new JSONObject();
     jobj.put(tag, jsonarr);
     writeJSON(tag, jobj, outdir);
   }
 
-  public static void writeJSON(String tag, JSONObject jobj, File outdir) throws Exception {
+  static void writeJSON(String tag, JSONObject jobj, File outdir) throws Exception {
     PrintWriter pw = new PrintWriter(new FileWriter(new File(outdir, "acb_" + tag + ".json")));
     pw.print("var acb_" + tag + " = ");
     // pw.println(jobj.toString(2));
@@ -313,7 +391,7 @@ public class Helper {
     close(pw);
   }
 
-  public static String write(Collection<?> c, Object separator, Object prefix, Object postfix) {
+  static String write(Collection<?> c, Object separator, Object prefix, Object postfix) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (Object o : c) {
@@ -324,7 +402,7 @@ public class Helper {
     return sb.toString();
   }
 
-  public static String getFileContents(File f) {
+  static String getFileContents(File f) {
     try {
       if (f == null || !f.exists()) return null;
       return read(new FileReader(f), true);
@@ -334,7 +412,7 @@ public class Helper {
     }
   }
 
-  public static String read(Reader fr, boolean closeAfter) {
+  static String read(Reader fr, boolean closeAfter) {
     try {
       StringBuilder sb = new StringBuilder();
       char[] cbuf = new char[512];
@@ -350,7 +428,7 @@ public class Helper {
     }
   }
 
-  public static void copy(InputStream r, OutputStream w, boolean closeAfter) {
+  static void copy(InputStream r, OutputStream w, boolean closeAfter) {
     try {
       byte[] c = new byte[512];
       int numread = 0;
@@ -368,7 +446,7 @@ public class Helper {
     }
   }
 
-  public static void debugAllContentResolvers(Context ctx) {
+  static void debugAllContentResolvers(Context ctx) {
     String[] all =
         new String[] {
           CallLog.CONTENT_URI.toString(),
@@ -391,11 +469,11 @@ public class Helper {
     for (String s : all) debugContentResolvers(ctx, s);
   }
 
-  public static void debugContentResolvers(Context ctx, String uri) {
+  static void debugContentResolvers(Context ctx, String uri) {
     debugContentResolvers(ctx, Uri.parse(uri));
   }
 
-  public static void debugContentResolvers(Context ctx, Uri uri) {
+  static void debugContentResolvers(Context ctx, Uri uri) {
     try {
       Cursor cur = ctx.getContentResolver().query(uri, null, null, null, null);
       Log.d(TAG, "columns for uri: " + uri + ": " + Arrays.asList(cur.getColumnNames()).toString());
@@ -405,7 +483,7 @@ public class Helper {
     }
   }
 
-  public static List<String> tokens(
+  static List<String> tokens(
       String stringrep, String separatorChars, boolean trim, boolean ignoreBlanks) {
     List<String> l = new ArrayList<String>();
     StringTokenizer stz = new StringTokenizer(stringrep, separatorChars);
@@ -420,7 +498,7 @@ public class Helper {
     return l;
   }
 
-  public static void close(Closeable... cs) {
+  static void close(Closeable... cs) {
     for (Closeable c : cs) {
       if (c != null) {
         try {

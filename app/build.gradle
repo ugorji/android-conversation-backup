@@ -8,8 +8,8 @@ android {
         applicationId "net.ugorji.android.conversationbackup"
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 16
-        versionName "1.4.0"
+        versionCode 17
+        versionName "1.4.1"
     }
     buildTypes {
         release {

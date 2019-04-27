@@ -20,8 +20,9 @@
   
   <!-- java code -->
   <string name="app_name">Conversation Backup</string>
-  <string name="home_activity_name">Conversation Backup Home</string>
-  <string name="result_activity_name">Conversation Backup Summary</string>
+  <string name="home_activity_name">Conversation Backup - Home</string>
+  <string name="result_activity_name">Conversation Backup - Summary</string>
+  <string name="archives_activity_name">Conversation Backup - Archives</string>
   <string name="hello">Hello World, Home!</string>
   <string name="summary">Conversation Backup will backup SMS, MMS and call records into a human-readable zip archive file, with bundled html viewer.</string>
   <string name="backup_conversation">Backup Conversation</string>
@@ -55,6 +56,7 @@
   <string name="ellipsis">" ... "</string>
   <string name="done">" DONE "</string>
   
+  <string name="fatal_title">FATAL</string>
   <!-- EULA -->
   <string name="eula_title">EULA</string>
   <string name="eula_accept">Accept</string>
