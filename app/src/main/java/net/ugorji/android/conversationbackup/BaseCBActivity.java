@@ -97,16 +97,12 @@ public abstract class BaseCBActivity extends Activity {
   }
 
   protected void showDialog(Helper.MyDialogFrag d) {
-    // added, attach to window, visible
-    //TODO: was getting "Fragment already added" error, and how to handle fragment not visible?
-    // error before: java.lang.IllegalStateException: Fragment already added
-    if(d.isAdded()) {
-      if(!d.isVisible()) {
-        // what should we do if fragment is hidden???
-      }
-    } else {
-      d.show(getFragmentManager(), d.tag);
-    }
+    // Note: isVisible = added, attach to window, and not hidden.
+    // Previously, I was getting "Fragment already added" error.
+    // error before: java.lang.IllegalStateException: Fragment already added.
+    // Now that dialogs are modal, this should not occur.
+    // Also, what if added but not visible? Cannot occur based on lifecycle.
+    if(!d.isAdded()) d.show(getFragmentManager(), d.tag);
   }
 
   protected void handleFatal(Exception exc) {

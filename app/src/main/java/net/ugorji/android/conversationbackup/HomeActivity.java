@@ -80,16 +80,6 @@ import java.util.Set;
  * - same requestCode: PROCESSING
  *  - set field in Permissions struct
  *  - call process2()
- * - EXTERNAL_STORAGE
- *  - if granted perm, call process2(),
- *  - else showDialog saying (need perm to write backup to external storage) and return
- *
- * Dialogs:
- * - different messages map to different things
- *  - perms_write_external_media: need perm to write to external media
- *  - perms_no_external_storage: cannot proceed due to no external storage
- *  - error_create_write_directory: cannot proceed as unable to create directory to write archive
- *  -
  *
  * Delete after backup:
  * - delete call records
@@ -115,25 +105,7 @@ public class HomeActivity extends BaseCBActivity {
   private Helper.MyDialogFrag dfProcess = new Helper.MyDialogFrag();
   private Helper.MyDialogFrag dfProgress = new Helper.MyDialogFrag();
   
-  // private static final int
-  //   PROGRESS_DIALOG = 100,
-  //   CONFIRM_DIALOG = 101,
-  //   EULA_DIALOG = 102,
-  //   BACKUP_DONE_DIALOG = 103;
-  //   // NEED_PERMS_WRITE_EXTERNAL_MEDIA_DIALOG = 103,
-  //   // NO_EXTERNAL_MEDIA_DIALOG = 104,
-  //   // ERROR_CREATE_WRITE_DIRECTORY_DIALOG = 105;
-
   private EditText specNumBackupEditView;
-
-  // private ProgressDialog progressDialog;
-  // private AlertDialog confirmDialog;
-  // private AlertDialog eulaDialog;
-  // private Intent shareIntent;
-  // private OnClickListener checkboxListener;
-
-  // private File appdir;
-  // private File resultLogFile;
 
   private BroadcastReceiver progressReceiver;
   
@@ -393,9 +365,7 @@ public class HomeActivity extends BaseCBActivity {
     int percent = 0;
     String progressMessage = (String)((TextView)dfProgress.msgView.findViewById(R.id.progress_view_text)).getText();
     boolean show = true;
-    // showDialog(PROGRESS_DIALOG);
     progressMessage = progressMessage + "\n" + message;
-    // progressDialog.setMessage(progressMessage);
     if (completed >= 0) percent = Math.min(100, completed);
     if (completed >= 100) {
       // if (progressDialog.isShowing()) progressDialog.dismiss();

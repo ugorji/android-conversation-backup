@@ -362,22 +362,10 @@ public class ProcessingService extends IntentService {
                 String partLoc =
                     curpart.getString(curpart.getColumnIndex(Helper.Cols.PART_CONTENT_LOCATION));
                 Uri partURI = Uri.withAppendedPath(Helper.Cols.MMS_PART_CONTENT_URI, partId);
-                Log.d(
-                    TAG,
-                    "Attachment for message: "
-                        + mms.id
-                        + ", part: "
-                        + partId
-                        + ", partUri: "
-                        + partURI
-                        + ", partData: "
-                        + partData
-                        + ", partLoc: "
-                        + partLoc
-                        + ", filename: "
-                        + mmse.filename
-                        + ", text: "
-                        + mmse.text);
+                Log.d(TAG,
+                    "Attachment for message: " + mms.id + ", part: " + partId + ", partUri: " + partURI
+                        + ", partData: " + partData  + ", partLoc: " + partLoc + ", filename: " + mmse.filename
+                        + ", text: " + mmse.text);
                 // e.g. smil.xml has no data (so don't even try to find stuff)
                 if (partData != null) {
                   mmse.filename = Helper.toFilename(partLoc);
@@ -506,12 +494,6 @@ public class ProcessingService extends IntentService {
     updateProgress(
         getString(R.string.creating_zip_file) + getString(R.string.ellipsis), percentCompl);
     File[] filess = tmpdir.listFiles();
-    // if (filess == null || filess.length == 0) {
-    //   zipfile.createNewFile();
-    //   // FileOutputStream foss = new FileOutputStream(zipfile);
-    //   // foss.flush();
-    //   // foss.close();
-    // } else {
     ZipOutputStream zout = new ZipOutputStream(zfos); // new FileOutputStream(zipfile));
     byte[] zbuf = new byte[1024];
     if (filess != null && filess.length > 0) {

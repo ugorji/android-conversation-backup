@@ -50,9 +50,9 @@ public class Helper {
   // static final Charset UTF_8 = Charset.forName("UTF-8")
   // static final Charset US_ASCII = Charset.forName("US-ASCII");
 
-  // TODO: for production, set SAFETY_DEV_MODE=false and INLINE_RESOURCES_IN_INDEX_HTML=true
-  static final boolean INLINE_RESOURCES_IN_INDEX_HTML = false;
+  // TODO: for production, set SAFETY_DEV_MODE=false
   static final boolean SAFETY_DEV_MODE = false;
+  static final boolean INLINE_RESOURCES_IN_INDEX_HTML = false;
 
   static final boolean SAFETY_ALLOW_DELETE_AFTER_BACKUP = !SAFETY_DEV_MODE,
     SAFETY_ALLOW_DELETE_TMP_DIR = !SAFETY_DEV_MODE,
@@ -99,7 +99,11 @@ public class Helper {
       }
     };
 
-
+  static void dismissAndFinish(DialogInterface d, Activity a) {
+    d.dismiss();
+    a.finish();
+  }
+  
   public static class MyDialogFrag extends DialogFragment {
     int cancelId;
     int dismissId;
@@ -113,18 +117,26 @@ public class Helper {
     DialogInterface.OnClickListener action;
     String tag;
 
+    {
+      setCancelable(false);
+    }
+        
     void setMyAction(DialogInterface.OnClickListener action) { this.action = action; }
     
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
       AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
       
-      if(titleId != 0) builder.setTitle(getString(titleId));
-      else if(title != null) builder.setTitle(title);
-      
-      if(msgId != 0) builder.setMessage(getString(msgId));
-      else if(msg != null) builder.setMessage(msg);
-      else if(msgView != null) {
+      if(titleId != 0) {
+        builder.setTitle(getString(titleId));
+      } else if(title != null) {
+        builder.setTitle(title);
+      }
+      if(msgId != 0) {
+        builder.setMessage(getString(msgId));
+      } else if(msg != null) {
+        builder.setMessage(msg);
+      } else if(msgView != null) {
         ViewParent vp = msgView.getParent();
         if(vp != null && vp instanceof ViewGroup) ((ViewGroup)vp).removeView(msgView);
         builder.setView(msgView);
@@ -141,10 +153,7 @@ public class Helper {
       if(action == null) {
         if(finishId != 0) {
           builder.setNeutralButton(getString(finishId),
-                                    (dialog1, id1) -> {
-                                      dialog1.dismiss();
-                                      getActivity().finish();
-                                    });
+                                   (dialog1, id1) -> dismissAndFinish(dialog1, getActivity()));
         } else if(dismissId != 0) {
           builder.setNeutralButton(getString(dismissId), Helper.DismissDialogOnClick);
         } else {
@@ -154,10 +163,7 @@ public class Helper {
         if(finishId != 0) {
           builder.setPositiveButton(getString(actionMsgId), action);
           builder.setNegativeButton(getString(finishId),
-                                    (dialog1, id1) -> {
-                                      dialog1.dismiss();
-                                      getActivity().finish();
-                                    });
+                                    (dialog1, id1) -> dismissAndFinish(dialog1, getActivity()));
         } else if(cancelId != 0) {
           builder.setPositiveButton(getString(actionMsgId), action);
           builder.setNegativeButton(getString(cancelId), Helper.CancelDialogOnClick);
@@ -169,7 +175,9 @@ public class Helper {
         }
       }
       builder.setCancelable(false);
-      return builder.create();
+      Dialog d = builder.create();
+      d.setCanceledOnTouchOutside(false);
+      return d;
     }
   }
   
