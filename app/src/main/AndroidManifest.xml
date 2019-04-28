@@ -22,7 +22,19 @@
             <intent-filter>
                 <action android:name="net.ugorji.android.androidconversationbackup.UPDATE_PROGRESS" />
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="http"
+                    android:host="ugorji.net"
+                    android:pathPrefix="/project/android-conversation-backup" />
             </intent-filter>
         </activity>
         <activity
@@ -32,6 +44,7 @@
                 <action android:name="net.ugorji.android.androidconversationbackup.ARCHIVES" />
             </intent-filter>
         </activity>
+
         <service android:name="net.ugorji.android.conversationbackup.ProcessingService" />
 
         <provider
@@ -41,7 +54,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
 
     </application>

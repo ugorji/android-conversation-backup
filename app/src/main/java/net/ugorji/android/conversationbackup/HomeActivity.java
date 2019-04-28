@@ -149,7 +149,20 @@ public class HomeActivity extends BaseCBActivity {
     // exi.putExtra(Helper.EXIT_ACTION, true);
     // startActivity(exi);
   }
-  
+
+  @Override
+  protected void handleIntent(Intent intent) {
+    // add support for app linking - so google search drives traffic here
+    String appLinkAction = intent.getAction();
+    Uri appLinkData = intent.getData();
+    if (Intent.ACTION_VIEW.equals(appLinkAction) && appLinkData != null){
+      // String recipeId = appLinkData.getLastPathSegment();
+      // Uri appData = Uri.parse("content://com.recipe_app/recipe/").buildUpon().appendPath(recipeId).build();
+      // showRecipe(appData);
+    }
+
+  }
+
   @Override
   protected void onCreateBaseCallback() {
     dfEula.tag = "eula";

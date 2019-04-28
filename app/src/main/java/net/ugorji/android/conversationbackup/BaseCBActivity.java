@@ -31,7 +31,12 @@ public abstract class BaseCBActivity extends Activity {
   
   @Override
   protected void onNewIntent(Intent intent) {
-    if (intent.getBooleanExtra(Helper.EXIT_ACTION, false)) finish();
+    if (intent.getBooleanExtra(Helper.EXIT_ACTION, false)) {
+      finish();
+      afterFinish();
+      return;
+    }
+    handleIntent(intent);
   }
 
   @Override
@@ -49,6 +54,8 @@ public abstract class BaseCBActivity extends Activity {
       if (exitAppButton != null) {
         exitAppButton.setOnClickListener(view -> { finish(); afterFinish(); });
       }
+
+      handleIntent(getIntent());
     } catch (Exception exc) {
       handleFatal(exc);
     }
@@ -77,7 +84,8 @@ public abstract class BaseCBActivity extends Activity {
       return super.onOptionsItemSelected(item);
     }
   }
-  
+
+  protected void handleIntent(Intent intent) { }
   protected void afterFinish() { }
   
   protected abstract void onCreateBaseCallback();
