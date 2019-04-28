@@ -12,6 +12,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
+import android.os.Environment;
 import android.provider.CallLog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -53,7 +55,8 @@ public class Helper {
   // TODO: for production, set SAFETY_DEV_MODE=false
   static final boolean SAFETY_DEV_MODE = false;
   static final boolean INLINE_RESOURCES_IN_INDEX_HTML = false;
-
+  static final boolean PREFER_EXTERNAL_DIR = true;
+  
   static final boolean SAFETY_ALLOW_DELETE_AFTER_BACKUP = !SAFETY_DEV_MODE,
     SAFETY_ALLOW_DELETE_TMP_DIR = !SAFETY_DEV_MODE,
     SAFETY_RETURN_NULL_FOR_DISPLAY_NAME = false; 
@@ -522,6 +525,21 @@ public class Helper {
     return ctx.getSharedPreferences(Helper.SHARED_PREFERENCES_KEY, Activity.MODE_PRIVATE);
   }
 
+  static File getArchivesDir(Context ctx) {
+    // prior to KitKat, permissions were required to access external storage.
+    // Also, the method Environment.getExternalStorageState is only available from LOLLIPOP.
+    // So: we check to use external dir only from LOLLIPOP and up.
+    if(PREFER_EXTERNAL_DIR && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      File xd = ctx.getExternalFilesDir(null);
+      // Log.d(TAG, ">>>>>>>>>>>>>>>>> build version > lollipop: " + Build.VERSION.SDK_INT +
+      //         ", external storage state: " + Environment.getExternalStorageState(xd));
+      if(xd != null && Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState(xd))) {
+        return xd;
+      }
+    }
+    return ctx.getFilesDir();
+  }
+  
   static Summary getSummary(SharedPreferences prefs) {
     Helper.Summary summ = new Helper.Summary();
     summ.timestamp = System.currentTimeMillis();

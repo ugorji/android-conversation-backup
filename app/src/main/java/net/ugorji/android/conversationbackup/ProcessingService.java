@@ -486,10 +486,12 @@ public class ProcessingService extends IntentService {
     Helper.close(pw);
 
     // now package all into a zip file
-    FileOutputStream zfos = openFileOutput(backupDestName + ".zip",
-                                           Context.MODE_PRIVATE);
-    File zipfile = getFileStreamPath(backupDestName + ".zip");
-    // File zipfile = new File(getFilesDir(), backupDestName + ".zip");
+    // FileOutputStream zfos = openFileOutput(backupDestName + ".zip",
+    //                                        Context.MODE_PRIVATE);
+    // File zipfile = getFileStreamPath(backupDestName + ".zip");
+    // // File zipfile = new File(getFilesDir(), backupDestName + ".zip");
+    File zipfile = new File(Helper.getArchivesDir(this),  backupDestName + ".zip");
+    FileOutputStream zfos = new FileOutputStream(zipfile);
     updateIntent.putExtra("zipfile", zipfile.getAbsolutePath());
     updateProgress(
         getString(R.string.creating_zip_file) + getString(R.string.ellipsis), percentCompl);

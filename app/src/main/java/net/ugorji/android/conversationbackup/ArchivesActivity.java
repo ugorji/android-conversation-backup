@@ -70,6 +70,8 @@ public class ArchivesActivity extends BaseCBActivity {
     listView = (ListView)findViewById(R.id.archives_list);
     listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
     listView.setAdapter(listAdapter);
+    // Log.d(TAG, ">>>>>>>>>>>>>> archives: " + Helper.getArchivesDir(this) +
+    //       ", files: " + getFilesDir() + ", external files: " + getExternalFilesDir(null));
   }
 
   @Override
@@ -104,8 +106,9 @@ public class ArchivesActivity extends BaseCBActivity {
     int num = listView.getCheckedItemCount();
     if(num <= 0) return;
     ArrayList<Uri> uris = new ArrayList<Uri>(num);
+    File dir = Helper.getArchivesDir(this);
     for(ListEntity e: entities()) {
-      Uri uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", new File(getFilesDir(), e.name));
+      Uri uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", new File(dir, e.name));
       uris.add(uri);
     }
                                            
@@ -122,8 +125,9 @@ public class ArchivesActivity extends BaseCBActivity {
     // logg("delete");
     int num = listView.getCheckedItemCount();
     if(num <= 0) return;
+    File dir = Helper.getArchivesDir(this);
     for(ListEntity e: entities()) {
-      Helper.deleteFile(new File(getFilesDir(), e.name));
+      Helper.deleteFile(new File(dir, e.name));
     }
     loadListAdapter();
     listView.clearChoices();
@@ -132,8 +136,7 @@ public class ArchivesActivity extends BaseCBActivity {
   private void loadListAdapter() {
     listAdapter.clear();
     // look at all files in the directory, and add them to the list
-    File d = getFilesDir();
-    for (File f : getFilesDir().listFiles()) {
+    for (File f : Helper.getArchivesDir(this).listFiles()) {
       String fname = f.getName();
       if(fname.startsWith("android_conversation_backup") && fname.endsWith(".zip")) {
         listAdapter.add(new ListEntity(fname, new Date(f.lastModified()), f.length()));
