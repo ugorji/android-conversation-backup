@@ -20,7 +20,7 @@
             android:label="@string/home_activity_name"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="net.ugorji.android.androidconversationbackup.UPDATE_PROGRESS" />
+                <action android:name="net.ugorji.android.conversationbackup.UPDATE_PROGRESS" />
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -41,7 +41,7 @@
             android:name="net.ugorji.android.conversationbackup.ArchivesActivity"
             android:label="@string/archives_activity_name">
             <intent-filter>
-                <action android:name="net.ugorji.android.androidconversationbackup.ARCHIVES" />
+                <action android:name="net.ugorji.android.conversationbackup.ARCHIVES" />
             </intent-filter>
         </activity>
 
